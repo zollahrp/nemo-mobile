@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'screens/fitur/fitur_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
-import 'screens/home/home_screen.dart';
+// import 'screens/home/home_screen.dart';
+import 'screens/home/main_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,12 +24,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       home: const FiturScreen(),
 
-      // Tambahin ini buat daftar rute navigasi
       routes: {
         '/login': (context) => const LoginScreen(),
         '/masuk': (context) => const MasukScreen(),
         '/daftar': (context) => const DaftarScreen(),
-        '/home': (context) => HomeScreen(),
+        '/home': (context) => MainScreen(),
         // tambahin rute lain kalau ada, misalnya:
         // '/register': (context) => const RegisterScreen(),
       },

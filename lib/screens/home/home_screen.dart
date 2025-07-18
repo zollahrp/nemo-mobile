@@ -6,7 +6,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: const Color(0xFFF5F5F5),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
         child: Column(
@@ -67,12 +67,12 @@ class HomeScreen extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 children: [
                   _buildArticleCard(
-                    imageUrl: 'https://i.ibb.co/fq5f2Sh/ikan1.jpg',
+                    imageUrl: 'lib/assets/images/artikel1.jpg',
                     title: 'Bagaimana cara identifikasi ikan',
                     category: 'Knowledge',
                   ),
                   _buildArticleCard(
-                    imageUrl: 'https://i.ibb.co/dPgXHJj/ikan2.jpg',
+                    imageUrl: 'lib/assets/images/artikel1.jpg',
                     title: 'Bagaimana memilih ikan sehat',
                     category: 'Life Style',
                   ),
@@ -98,12 +98,28 @@ class HomeScreen extends StatelessWidget {
               childAspectRatio: 1,
               children: [
                 _buildCategoryCard(
-                  'Freshwater Fish',
-                  'https://i.ibb.co/T2kqFyT/freshwater.jpg',
+                  'Ikan Air Tawar',
+                  'lib/assets/images/ikan_air_tawar.jpg',
                 ),
                 _buildCategoryCard(
-                  'Marine Fish',
-                  'https://i.ibb.co/2cBMLNW/marine.jpg',
+                  'Ikan Laut',
+                  'lib/assets/images/ikan_laut.jpg',
+                ),
+                _buildCategoryCard(
+                  'Ikan Air Payau',
+                  'lib/assets/images/ikan_air_payau.jpg',
+                ),
+                _buildCategoryCard(
+                  'Ikan Air Dingin',
+                  'lib/assets/images/ikan_air_dingin.jpg',
+                ),
+                _buildCategoryCard(
+                  'Ikan Predator',
+                  'lib/assets/images/ikan_predator.jpg',
+                ),
+                _buildCategoryCard(
+                  'Invertebrata',
+                  'lib/assets/images/invertebrata.jpg',
                 ),
               ],
             ),
@@ -124,7 +140,7 @@ class HomeScreen extends StatelessWidget {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         image: DecorationImage(
-          image: NetworkImage(imageUrl),
+          image: AssetImage(imageUrl),
           fit: BoxFit.cover,
         ),
       ),
@@ -136,17 +152,19 @@ class HomeScreen extends StatelessWidget {
             left: 0,
             right: 0,
             child: Container(
-              padding: const EdgeInsets.all(12),
+              height: 80, // Tambahin tinggi supaya gradasi naik
               decoration: const BoxDecoration(
                 borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black54],
+                  colors: [Colors.transparent, Colors.black87], // Lebih gelap biar jelas
                 ),
               ),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
                     title,
@@ -174,29 +192,54 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(String title, String imageUrl) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: NetworkImage(imageUrl),
-          fit: BoxFit.cover,
-        ),
-      ),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16),
       child: Stack(
         children: [
+          // Gambar background
+          Positioned.fill(
+            child: Image.asset(
+              imageUrl,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // Gradasi hitam di bawah
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 60,
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black54,
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // Teks kategori
           Positioned(
             bottom: 12,
             left: 12,
+            right: 12,
             child: Text(
               title,
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                fontSize: 16,
                 shadows: [
                   Shadow(
+                    blurRadius: 2,
                     color: Colors.black54,
-                    offset: Offset(0, 1),
-                    blurRadius: 3,
+                    offset: Offset(1, 1),
                   ),
                 ],
               ),
