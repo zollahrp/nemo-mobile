@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
+import 'package:nemo_mobile/screens/home/artikel_screen.dart';
+import 'package:nemo_mobile/data/dummy_artikel.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -64,20 +66,29 @@ class HomeScreen extends StatelessWidget {
 
             SizedBox(
               height: 180,
-              child: ListView(
+              child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                children: [
-                  _buildArticleCard(
-                    imageUrl: 'lib/assets/images/artikel1.jpg',
-                    title: 'Bagaimana cara identifikasi ikan',
-                    category: 'Knowledge',
-                  ),
-                  _buildArticleCard(
-                    imageUrl: 'lib/assets/images/artikel1.jpg',
-                    title: 'Bagaimana memilih ikan sehat',
-                    category: 'Life Style',
-                  ),
-                ],
+                itemCount: artikelList.length,
+                itemBuilder: (context, index) {
+                  final artikel = artikelList[index];
+                  return _buildArticleCard(
+                    imageUrl: artikel.imageUrl,
+                    title: artikel.title,
+                    category: 'Pengetahuan',
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ArtikelScreen(
+                            title: artikel.title,
+                            content: artikel.content,
+                            imageUrl: artikel.imageUrl,
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                },
               ),
             ),
 
@@ -194,60 +205,63 @@ class HomeScreen extends StatelessWidget {
     required String imageUrl,
     required String title,
     required String category,
+    required VoidCallback onTap,
   }) {
-    return Container(
-      width: 240,
-      margin: const EdgeInsets.only(right: 16),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(16),
-        image: DecorationImage(
-          image: AssetImage(imageUrl),
-          fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 240,
+        margin: const EdgeInsets.only(right: 16),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          image: DecorationImage(
+            image: AssetImage(imageUrl),
+            fit: BoxFit.cover,
+          ),
         ),
-      ),
-      child: Stack(
-        children: [
-          // Gradasi gelap bawah
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 80, // Tambahin tinggi supaya gradasi naik
-              decoration: const BoxDecoration(
-                borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Colors.transparent, Colors.black87], // Lebih gelap biar jelas
+        child: Stack(
+          children: [
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 90,
+                decoration: const BoxDecoration(
+                  borderRadius: BorderRadius.vertical(bottom: Radius.circular(16)),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.transparent, Colors.black87],
+                  ),
+                ),
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Text(
+                      title,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    Text(
+                      category,
+                      style: const TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    category,
-                    style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 12,
-                    ),
-                  ),
-                ],
-              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
