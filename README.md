@@ -22,7 +22,7 @@ Nemo Mobile adalah aplikasi Flutter berbasis kecerdasan buatan (AI) yang diranca
 
 ## 📱 Pratinjau
 
->  screenshot 
+![Fitur Aplikasi](https://raw.githubusercontent.com/zollahrp/nemo-ai/main/public/img/fitur.png)
 
 ---
 
