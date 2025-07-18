@@ -63,7 +63,7 @@ Yuk mulai kenali ikanmu lebih dalam bersama **Nemo.AI**. Jangan lupa cobain fitu
   ),
   ArtikelData(
     title: 'Bagaimana memilih ikan sehat',
-    imageUrl: 'lib/assets/images/artikel1.jpg',
+    imageUrl: 'lib/assets/images/artikel2.jpg',
     content: '''
 Memilih ikan yang sehat itu penting banget, apalagi kalau kamu baru mulai memelihara ikan di rumah. Ikan yang sakit bisa menularkan penyakit ke ikan lain dan merusak seluruh ekosistem akuariummu. Dengan memilih ikan yang sehat dari awal, kamu bisa mencegah banyak masalah di kemudian hari. Lebih baik mencegah daripada harus repot mengobati, kan?
 
@@ -79,7 +79,7 @@ Berikut beberapa tanda-tanda **ikan yang sehat**:
   ),
   ArtikelData(
     title: 'Tips merawat akuarium agar tetap jernih',
-    imageUrl: 'lib/assets/images/artikel1.jpg',
+    imageUrl: 'lib/assets/images/artikel3.jpg',
     content: '''
 Akuarium yang jernih bukan cuma enak dilihat, tapi juga jadi tempat tinggal yang sehat buat ikan-ikanmu. Air yang keruh bisa jadi tanda ada masalah, entah itu dari sisa makanan, kotoran, atau kurangnya sirkulasi.
 
@@ -95,7 +95,7 @@ Berikut beberapa tips supaya akuariummu tetap **jernih dan bersih**:
   ),
   ArtikelData(
     title: 'Jenis penyakit ikan yang umum dan cara mencegahnya',
-    imageUrl: 'lib/assets/images/artikel1.jpg',
+    imageUrl: 'lib/assets/images/artikel4.jpg',
     content: '''
 Ikan juga bisa kena sakit, lho dan kalau nggak ditangani dengan benar, bisa menular ke ikan lain di akuarium. Tapi tenang, kebanyakan penyakit bisa dicegah asal kamu tahu gejalanya sejak awal.
 
