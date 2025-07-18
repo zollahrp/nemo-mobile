@@ -50,7 +50,7 @@ class LoginScreen extends StatelessWidget {
               CustomButton(
                 text: "Masuk",
                 onPressed: () {
-                  // TODO: Arahkan ke form login
+                  Navigator.pushNamed(context, '/masuk');
                 },
               ),
 
@@ -83,7 +83,7 @@ class LoginScreen extends StatelessWidget {
                     textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   onPressed: () {
-                    // TODO: Arahkan ke form signup
+                    Navigator.pushNamed(context, '/daftar');
                   },
                   child: const Text(
                     "Daftar",

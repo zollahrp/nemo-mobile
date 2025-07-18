@@ -28,9 +28,9 @@ class CustomButton extends StatelessWidget {
           ),
         ),
         onPressed: onPressed,
-        child: const Text(
-          "Get Started",
-          style: TextStyle(color: Colors.white), // pastiin tulisan putih
+        child: Text(
+          text, // ✅ Ganti jadi parameter
+          style: const TextStyle(color: Colors.white),
         ),
       ),
     );
