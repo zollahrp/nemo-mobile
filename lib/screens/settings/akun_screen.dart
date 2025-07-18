@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/settings/faq_screen.dart';
+import 'package:nemo_mobile/screens/settings/terms_screen.dart';
+import 'package:nemo_mobile/screens/settings/privacy_policy_screen.dart';
 
 class AkunScreen extends StatelessWidget {
   const AkunScreen({super.key});
@@ -45,8 +47,19 @@ class AkunScreen extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => const FaqScreen()),
                   );
                 }),
-                menuTile(Icons.folder_open, 'Terms of Service', () {}),
-                menuTile(Icons.folder, 'Kebijakan Privasi', () {}),
+                menuTile(Icons.folder_open, 'Terms of Service', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const TermsScreen()),
+                  );
+                }),
+                menuTile(Icons.privacy_tip_outlined, 'Kebijakan Privasi', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PrivacyPolicyScreen()),
+                  );
+                }),
+
                 const SizedBox(height: 8),
                 menuTile(Icons.logout, 'Log Out', () {}, textColor: Colors.red),
                 menuTile(Icons.delete, 'Hapus Akun', () {}, textColor: Colors.red),
