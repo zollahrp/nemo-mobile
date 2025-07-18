@@ -88,7 +88,7 @@ class HomeScreen extends StatelessWidget {
               'Kategori',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 0),
 
             GridView.count(
               shrinkWrap: true,

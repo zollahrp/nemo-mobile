@@ -129,13 +129,13 @@ class _FiturScreenState extends State<FiturScreen> {
                 padding: const EdgeInsets.only(bottom: 32, left: 24, right: 24),
                 child: _currentIndex == fiturList.length - 1
                     ? CustomButton(
-                        text: "Get Started",
+                        text: "Yuk Mulai",
                         onPressed: () {
                           Navigator.pushNamed(context, '/login');
                         },
                       )
                     : CustomButton(
-                        text: "Next",
+                        text: "Lanjut",
                         onPressed: () {
                           _pageController.nextPage(
                             duration: const Duration(milliseconds: 300),

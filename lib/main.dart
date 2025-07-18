@@ -4,8 +4,11 @@ import 'screens/auth/login_screen.dart';
 import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
 import 'screens/fishbot/fishbot_screen.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'screens/onboarding/onboarding_screen.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load(); // Ini yang load file .env
   runApp(const MyApp());
 }
 
@@ -21,7 +24,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       debugShowCheckedModeBanner: false,
-      home: const MainScreen(), // ganti ke MainScreen langsung
+      home: const MainScreen(), // ganti ke MainScreen langsungFiturScreen
+      // home: const FiturScreen(),
       routes: {
         '/login': (context) => const LoginScreen(),
         '/masuk': (context) => const MasukScreen(),
