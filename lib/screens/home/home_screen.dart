@@ -35,9 +35,14 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const CircleAvatar(
-                  backgroundColor: Colors.blue,
-                  child: Text('F'),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.pushNamed(context, '/akun');
+                  },
+                  child: const CircleAvatar(
+                    backgroundColor: Colors.blue,
+                    child: Text('F'),
+                  ),
                 ),
               ],
             ),

@@ -5,6 +5,7 @@ import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
 import 'screens/fishbot/fishbot_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'screens/settings/akun_screen.dart';
 // import 'screens/onboarding/onboarding_screen.dart';
 
 Future<void> main() async {
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         '/masuk': (context) => const MasukScreen(),
         '/daftar': (context) => const DaftarScreen(),
         '/fishbot': (context) => const FishBotScreen(),
+        '/akun': (context) => const AkunScreen(),
       },
     );
   }
