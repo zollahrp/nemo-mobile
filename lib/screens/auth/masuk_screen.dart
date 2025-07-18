@@ -94,7 +94,7 @@ class MasukScreen extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  // TODO: Arahkan ke dashboard user nanti
+                  Navigator.pushReplacementNamed(context, '/home');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF45B1F9),

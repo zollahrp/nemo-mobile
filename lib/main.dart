@@ -3,6 +3,7 @@ import 'screens/fitur/fitur_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
+import 'screens/home/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/masuk': (context) => const MasukScreen(),
         '/daftar': (context) => const DaftarScreen(),
+        '/home': (context) => HomeScreen(),
         // tambahin rute lain kalau ada, misalnya:
         // '/register': (context) => const RegisterScreen(),
       },
