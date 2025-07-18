@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -97,29 +98,89 @@ class HomeScreen extends StatelessWidget {
               mainAxisSpacing: 12,
               childAspectRatio: 1,
               children: [
-                _buildCategoryCard(
-                  'Ikan Air Tawar',
-                  'lib/assets/images/ikan_air_tawar.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Ikan Air Tawar'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Ikan Air Tawar',
+                    'lib/assets/images/ikan_air_tawar.jpg',
+                  ),
                 ),
-                _buildCategoryCard(
-                  'Ikan Laut',
-                  'lib/assets/images/ikan_laut.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Ikan Laut'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Ikan Laut',
+                    'lib/assets/images/ikan_laut.jpg',
+                  ),
                 ),
-                _buildCategoryCard(
-                  'Ikan Air Payau',
-                  'lib/assets/images/ikan_air_payau.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Ikan Air Payau'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Ikan Air Payau',
+                    'lib/assets/images/ikan_air_payau.jpg',
+                  ),
                 ),
-                _buildCategoryCard(
-                  'Ikan Air Dingin',
-                  'lib/assets/images/ikan_air_dingin.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Ikan Air Dingin'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Ikan Air Dingin',
+                    'lib/assets/images/ikan_air_dingin.jpg',
+                  ),
                 ),
-                _buildCategoryCard(
-                  'Ikan Predator',
-                  'lib/assets/images/ikan_predator.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Ikan Predator'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Ikan Predator',
+                    'lib/assets/images/ikan_predator.jpg',
+                  ),
                 ),
-                _buildCategoryCard(
-                  'Invertebrata',
-                  'lib/assets/images/invertebrata.jpg',
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ListIkanScreen(kategori: 'Invertebrata'),
+                      ),
+                    );
+                  },
+                  child: _buildCategoryCard(
+                    'Invertebrata',
+                    'lib/assets/images/invertebrata.jpg',
+                  ),
                 ),
               ],
             ),

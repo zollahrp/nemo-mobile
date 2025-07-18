@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'screens/onboarding/onboarding_screen.dart';
+import 'screens/home/main_screen.dart';
 import 'screens/auth/login_screen.dart';
 import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
-// import 'screens/home/home_screen.dart';
-import 'screens/home/main_screen.dart';
+import 'screens/fishbot/fishbot_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -22,15 +21,12 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
       ),
       debugShowCheckedModeBanner: false,
-      home: const FiturScreen(),
-
+      home: const MainScreen(), // ganti ke MainScreen langsung
       routes: {
         '/login': (context) => const LoginScreen(),
         '/masuk': (context) => const MasukScreen(),
         '/daftar': (context) => const DaftarScreen(),
-        '/home': (context) => MainScreen(),
-        // tambahin rute lain kalau ada, misalnya:
-        // '/register': (context) => const RegisterScreen(),
+        '/fishbot': (context) => const FishBotScreen(),
       },
     );
   }

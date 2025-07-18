@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:nemo_mobile/screens/home/home_screen.dart';
-import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
-// import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
-// import 'package:nemo_mobile/screens/fishcbot/fishcbot_screen.dart';
-// import 'package:nemo_mobile/screens/profile/profile_screen.dart';
+import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
+import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -20,10 +18,8 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const AkuariumScreen(),
-    // const ScannerScreen(),
-    // const FishcbotScreen(),
-    // const ProfileScreen(),
+    const ScannerScreen(),
+    const FishBotScreen(),
   ];
 
   @override
@@ -31,7 +27,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFAFAFA),
       body: Padding(
-        padding: const EdgeInsets.only(bottom: 0), // konten gak ketutup navbar
+        padding: const EdgeInsets.only(bottom: 0),
         child: _screens[_selectedIndex],
       ),
       bottomNavigationBar: PhysicalModel(
@@ -47,12 +43,8 @@ class _MainScreenState extends State<MainScreen> {
           index: _selectedIndex,
           items: const <Widget>[
             Padding(
-              padding: EdgeInsets.only(top: 0), // geser ke atas
+              padding: EdgeInsets.only(top: 0),
               child: Icon(Icons.home, size: 30, color: Colors.black),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Icon(Icons.water, size: 30, color: Colors.black),
             ),
             Padding(
               padding: EdgeInsets.only(top: 5),
@@ -61,10 +53,6 @@ class _MainScreenState extends State<MainScreen> {
             Padding(
               padding: EdgeInsets.only(top: 5),
               child: Icon(Icons.smart_toy, size: 30, color: Colors.black),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 5),
-              child: Icon(Icons.person, size: 30, color: Colors.black),
             ),
           ],
           onTap: (index) {
