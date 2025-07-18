@@ -52,7 +52,7 @@ class _MainScreenState extends State<MainScreen> {
             ),
             Padding(
               padding: EdgeInsets.only(top: 5),
-              child: Icon(Icons.smart_toy, size: 30, color: Colors.black),
+              child: Icon(Icons.auto_awesome, size: 30, color: Colors.black),
             ),
           ],
           onTap: (index) {

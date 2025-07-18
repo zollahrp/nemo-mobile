@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/settings/faq_screen.dart';
 import 'package:nemo_mobile/screens/settings/terms_screen.dart';
 import 'package:nemo_mobile/screens/settings/privacy_policy_screen.dart';
+import 'package:nemo_mobile/screens/settings/informasi_personal_screen.dart';
 
 class AkunScreen extends StatelessWidget {
   const AkunScreen({super.key});
@@ -40,7 +41,12 @@ class AkunScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                menuTile(Icons.person, 'Informasi Personal', () {}),
+                menuTile(Icons.person, 'Informasi Personal', () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const InformasiPersonalScreen()),
+                  );
+                }),
                 menuTile(Icons.help_outline, 'FAQ', () {
                   Navigator.push(
                     context,
