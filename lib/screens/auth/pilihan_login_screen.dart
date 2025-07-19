@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/widgets/custom_button.dart';
 
-class LoginScreen extends StatelessWidget {
-  const LoginScreen({super.key});
+class PilihanLoginScreen  extends StatelessWidget {
+  const PilihanLoginScreen ({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +13,7 @@ class LoginScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 64), // jarak logo agak ke bawah
+              const SizedBox(height: 64),
 
               // Logo
               Center(

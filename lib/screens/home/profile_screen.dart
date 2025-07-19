@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nemo_mobile/main.dart';
 import 'package:nemo_mobile/screens/auth/masuk_screen.dart';
 
@@ -16,13 +17,19 @@ class ProfileScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () async {
-              await supabase.auth.signOut();
-              if (context.mounted) {
-                Navigator.of(context).pushReplacement(
-                  MaterialPageRoute(builder: (context) => const LoginScreen()),
-                );
-              }
-            },
+            // Sign out dari Supabase
+            await supabase.auth.signOut();
+
+            // Sign out juga dari Google
+            final GoogleSignIn googleSignIn = GoogleSignIn();
+            await googleSignIn.signOut();
+
+            if (context.mounted) {
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(builder: (context) => const LoginScreen()),
+              );
+            }
+          },
             child: const Text('Sign out'),
           )
         ],
