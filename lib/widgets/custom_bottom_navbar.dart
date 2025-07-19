@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:tabler_icons/tabler_icons.dart'; 
 
 void main() => runApp(MyApp());
 
@@ -20,35 +21,73 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _page = 0;
-  GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   final List<Widget> _pages = [
-    Center(child: Text('Halaman 1')),
-    Center(child: Text('Halaman 2')),
-    Center(child: Text('Halaman 3')),
+    Center(child: Text('Beranda', style: TextStyle(fontSize: 24))),
+    Center(child: Text('Pencarian', style: TextStyle(fontSize: 24))),
+    Center(child: Text('Profil', style: TextStyle(fontSize: 24))),
+  ];
+
+  final List<IconData> icons = [
+    TablerIcons.home,
+    TablerIcons.search,
+    TablerIcons.user,
+  ];
+
+  final List<String> labels = [
+    'Beranda',
+    'Cari',
+    'Akun',
   ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      extendBody: true, // biar efek transparan bisa jalan
+      body: Stack(
+        children: [
+          _pages[_page],
+          // Optional: Tambahin efek blur/glass di atas navigasi
+        ],
+      ),
       bottomNavigationBar: CurvedNavigationBar(
-        key: _bottomNavigationKey,
+        index: _page,
         backgroundColor: Colors.transparent,
         color: Colors.white,
-        buttonBackgroundColor: Colors.greenAccent,
+        buttonBackgroundColor: Color(0xFF0E91E9),
+        height: 65,
         animationDuration: Duration(milliseconds: 300),
-        items: <Widget>[
-          Icon(Icons.home, size: 30),
-          Icon(Icons.search, size: 30),
-          Icon(Icons.person, size: 30),
-        ],
         onTap: (index) {
           setState(() {
             _page = index;
           });
         },
+        items: List.generate(icons.length, (i) {
+          final isActive = _page == i;
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                icons[i],
+                size: 28,
+                color: isActive ? Colors.white : Colors.grey[600],
+              ),
+              if (isActive)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    labels[i],
+                    style: TextStyle(
+                      fontSize: 10,
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+            ],
+          );
+        }),
       ),
-      body: _pages[_page],
     );
   }
 }
