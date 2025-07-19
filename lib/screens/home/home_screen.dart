@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.blueAccent, width: 2),
                         image: const DecorationImage(
-                          image: AssetImage('lib/assets/images/avatar_default.jpg'),
+                          image: AssetImage('lib/assets/images/logo_bulat.png'),
                           fit: BoxFit.cover,
                         ),
                       ),

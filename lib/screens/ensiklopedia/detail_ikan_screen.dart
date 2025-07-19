@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../models/ikanmodel.dart';
+import 'package:nemo_mobile/models/IkanModel.dart';
 
 class DetailIkanScreen extends StatelessWidget {
   final IkanModel ikan;
@@ -14,7 +14,7 @@ class DetailIkanScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(ikan.gambarUrl, width: double.infinity, height: 250, fit: BoxFit.cover),
+            Image.network(ikan.gambarUrl, width: double.infinity, height: 250, fit: BoxFit.cover),
             const SizedBox(height: 16),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -37,7 +37,11 @@ class DetailIkanScreen extends StatelessWidget {
                 children: [
                   _buildInfoRow("Suhu", ikan.suhu),
                   _buildInfoRow("Jenis", ikan.jenis),
-                  _buildInfoRow("yg lain", ikan.ygLain),
+                  _buildInfoRow("pH", ikan.ph),
+                  _buildInfoRow("Oksigen", ikan.oksigen),
+                  _buildInfoRow("Ukuran", ikan.ukuran),
+                  _buildInfoRow("Umur", ikan.umur),
+                  _buildInfoRow("Asal", ikan.asal),
                 ],
               ),
             ),
