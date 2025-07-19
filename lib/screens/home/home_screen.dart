@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/home/artikel_screen.dart';
 import 'package:nemo_mobile/data/dummy_artikel.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+final user = Supabase.instance.client.auth.currentUser;
+final fullName = user?.userMetadata?['full_name'] ?? 'Pengguna';
+final avatarUrl = user?.userMetadata?['avatar_url'];
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -60,31 +64,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Hai,',
-                        style: TextStyle(fontSize: 16, color: Colors.black87),
-                      ),
-                      RichText(
-                      text: TextSpan(
-                        children: [
-                          TextSpan(
-                            text: greetingMessage(),
-                            style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 22,
-                            color: Colors.black,
-                          ),
+                      Text(
+                        'Hai, $fullName',
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
                         ),
-                        const TextSpan(
-                              text: '👋',
-                              style: TextStyle(fontSize: 22),
-                            ),
-                          ],
+                      ),
+                      Text(
+                        greetingMessage(),
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black87,
                         ),
                       ),
                     ],
                   ),
-
                   // avatar
                   GestureDetector(
                     onTap: () => Navigator.pushNamed(context, '/akun'),
@@ -94,10 +90,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         border: Border.all(color: Colors.blueAccent, width: 2),
-                        image: const DecorationImage(
-                          image: AssetImage('lib/assets/images/logo_bulat.png'),
-                          fit: BoxFit.cover,
-                        ),
+                        image: avatarUrl != null
+                            ? DecorationImage(
+                                image: NetworkImage(avatarUrl),
+                                fit: BoxFit.cover,
+                              )
+                            : const DecorationImage(
+                                image: AssetImage('lib/assets/images/logo_bulat.png'),
+                                fit: BoxFit.cover,
+                              ),
                       ),
                     ),
                   ),
