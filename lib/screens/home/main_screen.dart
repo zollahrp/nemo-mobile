@@ -20,6 +20,7 @@ class _MainScreenState extends State<MainScreen> {
     const HomeScreen(),
     const ScannerScreen(),
     const FishBotScreen(),
+    // FishBotScreen(sessionId: 'default-session-id'),
   ];
 
   @override
