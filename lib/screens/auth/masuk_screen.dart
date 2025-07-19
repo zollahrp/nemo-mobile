@@ -157,7 +157,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nemo_mobile/main.dart';
-import 'package:nemo_mobile/screens/home/home_screen.dart';
+import 'package:nemo_mobile/screens/home/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -178,9 +178,14 @@ class _LoginScreenState extends State<LoginScreen> {
     supabase.auth.onAuthStateChange.listen((data) {
       final event = data.event;
       if (event == AuthChangeEvent.signedIn) {
+        // Navigator.of(context).pushReplacement(
+        //   MaterialPageRoute(
+        //     builder: (context) => const HomeScreen(),
+        //   ),
+        // );
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
-            builder: (context) => const HomeScreen(),
+            builder: (context) => const MainScreen(),
           ),
         );
       }

@@ -1,47 +1,45 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// // splash_screen.dart
+// import 'package:flutter/material.dart';
+// import 'package:supabase_flutter/supabase_flutter.dart';
+// import '../home/main_screen.dart';
+// import '../onboarding/onboarding_screen.dart';
 
-class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+// class SplashScreen extends StatefulWidget {
+//   const SplashScreen({super.key});
 
-  @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
+//   @override
+//   State<SplashScreen> createState() => _SplashScreenState();
+// }
 
-class _SplashScreenState extends State<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    _navigate();
-  }
+// class _SplashScreenState extends State<SplashScreen> {
+//   @override
+//   void initState() {
+//     super.initState();
+//     _checkLogin();
+//   }
 
-  Future<void> _navigate() async {
-    await Future.delayed(const Duration(seconds: 2)); // Optional delay
+//   Future<void> _checkLogin() async {
+//     await Future.delayed(const Duration(seconds: 2)); // Splash delay
 
-    final prefs = await SharedPreferences.getInstance();
-    final isFirstTime = prefs.getBool('is_first_time') ?? true;
-    final isLoggedIn = prefs.getBool('is_logged_in') ?? false;
+//     final session = Supabase.instance.client.auth.currentSession;
 
-    if (isFirstTime) {
-      await prefs.setBool('is_first_time', false);
-      Navigator.pushReplacementNamed(context, '/fitur');
-    } else if (isLoggedIn) {
-      Navigator.pushReplacementNamed(context, '/main');
-    } else {
-      Navigator.pushReplacementNamed(context, '/login');
-    }
-  }
+//     if (session != null) {
+//       // Sudah login
+//       Navigator.of(context).pushReplacement(
+//         MaterialPageRoute(builder: (_) => const MainScreen()),
+//       );
+//     } else {
+//       // Belum login → ke onboarding
+//       Navigator.of(context).pushReplacement(
+//         MaterialPageRoute(builder: (_) => const FiturScreen()),
+//       );
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Colors.white,
-      body: Center(
-        child: Text(
-          'Nemo.AI',
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-        ),
-      ),
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return const Scaffold(
+//       body: Center(child: Text('Splash...')),
+//     );
+//   }
+// }

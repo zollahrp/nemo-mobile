@@ -52,9 +52,9 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const SplashScreen(),
+      home: const FiturScreen(),
       routes: {
-        '/fitur': (context) => const FiturScreen(),
+        // '/fitur': (context) => const FiturScreen(),
         '/login': (context) => const PilihanLoginScreen(),
         '/masuk': (context) => const LoginScreen(),
         '/daftar': (context) => const DaftarScreen(),
@@ -62,44 +62,6 @@ class MyApp extends StatelessWidget {
         '/akun': (context) => const AkunScreen(),
         '/main': (context) => const MainScreen(),
       },
-    );
-  }
-}
-
-class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
-
-  @override
-  State<MainScreen> createState() => _MainScreenState();
-}
-
-class _MainScreenState extends State<MainScreen> {
-  DateTime? _lastPressed;
-
-  Future<bool> _onWillPop() async {
-    final now = DateTime.now();
-
-    if (_lastPressed == null || now.difference(_lastPressed!) > const Duration(seconds: 2)) {
-      _lastPressed = now;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Tekan sekali lagi untuk keluar"),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return false;
-    }
-    return true;
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: _onWillPop,
-      child: Scaffold(
-        body: Center(child: Text('Ini halaman utama')),
-        // atau widget Navigasi Utama lu
-      ),
     );
   }
 }
