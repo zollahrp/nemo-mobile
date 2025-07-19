@@ -3,6 +3,10 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
+import '../../models/message.dart';
+import '../../shared/chat_storage.dart';
+import '../../widgets/chat_bubble.dart';
+
 class FishBotScreen extends StatefulWidget {
   const FishBotScreen({super.key});
 
@@ -12,19 +16,31 @@ class FishBotScreen extends StatefulWidget {
 
 class _FishBotScreenState extends State<FishBotScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Map<String, String>> _messages = [];
+  final List<Message> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadHistory();
+  }
+
+  Future<void> _loadHistory() async {
+    final history = await ChatStorage.getMessages();
+    setState(() => _messages.addAll(history));
+  }
 
   Future<void> sendMessage() async {
-    final inputText = _controller.text;
+    final inputText = _controller.text.trim();
     if (inputText.isEmpty) return;
 
+    final userMessage = Message(role: 'user', text: inputText);
     setState(() {
-      _messages.add({'role': 'user', 'text': inputText});
+      _messages.add(userMessage);
       _controller.clear();
     });
+    await ChatStorage.saveMessages(_messages);
 
     final apiKey = dotenv.env['GEMINI_API_KEY'];
-
     final uri = Uri.https(
       'generativelanguage.googleapis.com',
       '/v1beta/models/gemini-2.0-flash:generateContent',
@@ -33,9 +49,7 @@ class _FishBotScreenState extends State<FishBotScreen> {
 
     final response = await http.post(
       uri,
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: {'Content-Type': 'application/json'},
       body: json.encode({
         "contents": [
           {
@@ -49,20 +63,21 @@ class _FishBotScreenState extends State<FishBotScreen> {
     );
 
     if (response.statusCode != 200) {
-      print('Error code: ${response.statusCode}');
-      print('Response body: ${response.body}');
-      setState(() {
-        _messages.add({'role': 'bot', 'text': 'Terjadi kesalahan: ${response.statusCode}'});
-      });
+      final error = Message(
+        role: 'bot',
+        text: 'Terjadi kesalahan: ${response.statusCode}',
+      );
+      setState(() => _messages.add(error));
+      await ChatStorage.saveMessages(_messages);
       return;
     }
 
     final result = json.decode(response.body);
-    final reply = result['candidates']?[0]['content']?['parts']?[0]?['text'] ?? 'Gagal mendapatkan balasan.';
+    final replyText = result['candidates']?[0]['content']?['parts']?[0]?['text'] ?? 'Tidak ada jawaban.';
+    final botMessage = Message(role: 'bot', text: replyText);
 
-    setState(() {
-      _messages.add({'role': 'bot', 'text': reply});
-    });
+    setState(() => _messages.add(botMessage));
+    await ChatStorage.saveMessages(_messages);
   }
 
   @override
@@ -73,13 +88,13 @@ class _FishBotScreenState extends State<FishBotScreen> {
           children: [
             const SizedBox(height: 16),
             Image.asset('lib/assets/images/logo.png', width: 100),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
             const Text(
               'Membutuhkan bantuan?',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Text(
-              'AI kami siap membantu Kamu\nmasalah ikan hias apa pun!',
+              'AI kami siap bantu Kamu\nmasalah ikan hias apa pun!',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.black54),
             ),
@@ -87,29 +102,30 @@ class _FishBotScreenState extends State<FishBotScreen> {
 
             // Chat list
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final msg = _messages[index];
-                  final isUser = msg['role'] == 'user';
-                  return Align(
-                    alignment: isUser ? Alignment.centerRight : Alignment.centerLeft,
-                    child: Container(
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: isUser ? Colors.blue[100] : Colors.grey[300],
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(msg['text'] ?? ''),
+            child: _messages.isEmpty
+                ? const Center(
+                    child: Text(
+                      'Belum ada percakapan.',
+                      style: TextStyle(color: Colors.black54),
                     ),
-                  );
-                },
-              ),
-            ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _messages.length,
+                    itemBuilder: (context, index) {
+                      final message = _messages[index];
 
-            // Input area
+                      // Cek null atau invalid
+                      if (message.text.isEmpty || message.role.isEmpty) {
+                        return const Text('[Pesan tidak valid]');
+                      }
+
+                      return ChatBubble(message: message);
+                    },
+                  ),
+          ),
+
+            // Input
             Container(
               margin: const EdgeInsets.all(16),
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -124,7 +140,7 @@ class _FishBotScreenState extends State<FishBotScreen> {
                       controller: _controller,
                       decoration: const InputDecoration(
                         border: InputBorder.none,
-                        hintText: 'Ketik di sini...',
+                        hintText: 'Ketik pertanyaan di sini...',
                       ),
                       onSubmitted: (_) => sendMessage(),
                     ),
