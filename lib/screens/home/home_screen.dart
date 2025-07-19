@@ -3,8 +3,27 @@ import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/home/artikel_screen.dart';
 import 'package:nemo_mobile/data/dummy_artikel.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  // ✅ Fungsi salam waktu
+  String greetingMessage() {
+    final hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return 'Selamat Pagi! ';
+    } else if (hour >= 12 && hour < 15) {
+      return 'Selamat Siang! ';
+    } else if (hour >= 15 && hour < 18) {
+      return 'Selamat Sore! ';
+    } else {
+      return 'Selamat Malam! ';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +35,7 @@ class HomeScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24), // top diperbesar
+          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24),
           decoration: BoxDecoration(
             color: Colors.white,
             boxShadow: [
@@ -46,17 +65,17 @@ class HomeScreen extends StatelessWidget {
                         style: TextStyle(fontSize: 16, color: Colors.black87),
                       ),
                       RichText(
-                        text: const TextSpan(
-                          children: [
-                            TextSpan(
-                              text: 'Selamat Pagi! ',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22,
-                                color: Colors.black,
-                              ),
-                            ),
-                            TextSpan(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: greetingMessage(),
+                            style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 22,
+                            color: Colors.black,
+                          ),
+                        ),
+                        const TextSpan(
                               text: '👋',
                               style: TextStyle(fontSize: 22),
                             ),
