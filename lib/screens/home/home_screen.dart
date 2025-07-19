@@ -15,50 +15,103 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 👋 Greeting dan avatar
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Hai, user!',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                    Text(
-                      'Selamat Pagi!',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
+            Container(
+          padding: const EdgeInsets.fromLTRB(20, 32, 20, 24), // top diperbesar
+          decoration: BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 3),
+              ),
+            ],
+            borderRadius: const BorderRadius.only(
+              bottomLeft: Radius.circular(20),
+              bottomRight: Radius.circular(20),
+            ),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // greeting
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Hai,',
+                        style: TextStyle(fontSize: 16, color: Colors.black87),
                       ),
+                      RichText(
+                        text: const TextSpan(
+                          children: [
+                            TextSpan(
+                              text: 'Selamat Pagi! ',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 22,
+                                color: Colors.black,
+                              ),
+                            ),
+                            TextSpan(
+                              text: '👋',
+                              style: TextStyle(fontSize: 22),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  // avatar
+                  GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/akun'),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(color: Colors.blueAccent, width: 2),
+                        image: const DecorationImage(
+                          image: AssetImage('lib/assets/images/avatar_default.jpg'),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 16), // spasi ke search bar
+
+              // search bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
                   ],
                 ),
-                GestureDetector(
-                  onTap: () {
-                    Navigator.pushNamed(context, '/akun');
-                  },
-                  child: const CircleAvatar(
-                    backgroundColor: Colors.blue,
-                    child: Text('F'),
+                child: const TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Temukan ikan hias...',
+                    border: InputBorder.none,
+                    icon: Icon(Icons.search, color: Colors.grey),
                   ),
                 ),
-              ],
-            ),
-
-            const SizedBox(height: 24),
-
-            // 🔍 Search Bar
-            TextField(
-              decoration: InputDecoration(
-                hintText: 'Temukan ikan hias',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
               ),
-            ),
+            ],
+          ),
+        ),
 
             const SizedBox(height: 32),
 
