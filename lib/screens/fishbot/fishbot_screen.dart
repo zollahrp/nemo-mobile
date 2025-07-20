@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../models/message.dart';
 import '../../widgets/chat_bubble.dart';
+import '../../models/chat_session_model.dart';
+import '../../models/chat_message_model.dart';
+import '../../services/chat_service.dart';
 
 class FishBotScreen extends StatefulWidget {
   const FishBotScreen({super.key});
@@ -15,18 +18,68 @@ class FishBotScreen extends StatefulWidget {
 
 class _FishBotScreenState extends State<FishBotScreen> {
   final TextEditingController _controller = TextEditingController();
-  final List<Message> _messages = [];
+  ChatSession? currentSession;
+  List<ChatMessage> _messages = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+
+    var last = await ChatService.getLastSession(userId);
+
+    if (last == null) {
+      last = await ChatService.createSession(userId);
+    }
+
+    setState(() {
+      currentSession = last;
+    });
+
+    _loadMessages();
+  }
+
+  Future<void> _loadMessages() async {
+    if (currentSession == null) return;
+
+    final msgs = await ChatService.getMessages(currentSession!.id);
+    setState(() {
+      _messages = msgs;
+    });
+  }
 
   Future<void> sendMessage() async {
     final inputText = _controller.text.trim();
-    if (inputText.isEmpty) return;
+    final userId = Supabase.instance.client.auth.currentUser?.id;
+    debugPrint('Kirim message: $inputText');
 
-    final userMessage = Message(role: 'user', text: inputText);
+    if (inputText.isEmpty || currentSession == null || userId == null) {
+      debugPrint('Gagal kirim pesan: input kosong atau user belum login.');
+      return;
+    }
+
+    // Simpan pesan user
+    await ChatService.sendMessage(
+      sessionId: currentSession!.id,
+      role: 'user',
+      content: inputText,
+    );
+
     setState(() {
-      _messages.add(userMessage);
+      _messages.add(ChatMessage(
+        id: '',
+        role: 'user',
+        content: inputText,
+        createdAt: DateTime.now(),
+      ));
       _controller.clear();
     });
 
+    // Kirim ke Gemini
     final apiKey = dotenv.env['GEMINI_API_KEY'];
     final uri = Uri.https(
       'generativelanguage.googleapis.com',
@@ -54,10 +107,20 @@ class _FishBotScreenState extends State<FishBotScreen> {
           ? (json.decode(response.body)['candidates']?[0]['content']?['parts']?[0]?['text'] ?? 'Tidak ada jawaban.')
           : 'Terjadi kesalahan: ${response.statusCode}';
 
-      final botMessage = Message(role: 'bot', text: replyText);
-      setState(() => _messages.add(botMessage));
+      await ChatService.sendMessage(
+        sessionId: currentSession!.id,
+        role: 'assistant',
+        content: replyText,
+      );
+
+      _loadMessages();
     } catch (e) {
-      setState(() => _messages.add(Message(role: 'bot', text: 'Terjadi error.')));
+      await ChatService.sendMessage(
+        sessionId: currentSession!.id,
+        role: 'assistant',
+        content: 'Terjadi error saat menghubungi AI.',
+      );
+      _loadMessages();
     }
   }
 
@@ -80,6 +143,49 @@ class _FishBotScreenState extends State<FishBotScreen> {
               style: TextStyle(color: Colors.black54),
             ),
             const Divider(),
+
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      final userId = Supabase.instance.client.auth.currentUser?.id;
+                      if (userId == null) return;
+
+                      final newSession = await ChatService.createSession(userId);
+                      setState(() {
+                        currentSession = newSession;
+                        _messages = [];
+                      });
+                    },
+                    icon: const Icon(Icons.add),
+                    label: const Text('New Chat'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      // nanti bisa navigasi ke halaman history, untuk sementara tampilkan alert
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Coming Soon'),
+                          content: const Text('Fitur Riwayat Chat belum tersedia.'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: const Text('History'),
+                  ),
+                ],
+              ),
+            ),
+
 
             Expanded(
               child: _messages.isEmpty

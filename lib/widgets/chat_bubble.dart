@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/message.dart';
+import '../models/chat_message_model.dart';
 
 class ChatBubble extends StatelessWidget {
-  final Message message;
+  final ChatMessage message;
 
   const ChatBubble({super.key, required this.message});
 
@@ -20,7 +20,7 @@ class ChatBubble extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
         ),
         child: Text(
-          message.text,
+          message.content,
           style: TextStyle(
             color: isUser ? Colors.white : Colors.black87,
           ),

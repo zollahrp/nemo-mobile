@@ -1,61 +1,60 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:nemo_mobile/models/chat_session.dart';
-import 'package:nemo_mobile/models/message.dart';
+import '../models/chat_session_model.dart';
+import '../models/chat_message_model.dart';
+import 'package:flutter/foundation.dart';
+
+final supabase = Supabase.instance.client;
 
 class ChatService {
-  final supabase = Supabase.instance.client;
-
-  // CREATE Session
-  Future<ChatSession?> createSession(String userId) async {
+  static Future<ChatSession> createSession(String? userId) async {
     final res = await supabase.from('chat_sessions').insert({
       'user_id': userId,
+      'title': 'Sesi ${DateTime.now().toIso8601String()}',
     }).select().single();
 
     return ChatSession.fromJson(res);
   }
 
-  // GET All Sessions (by user)
-  Future<List<ChatSession>> getSessions(String userId) async {
-    final res = await supabase
-        .from('chat_sessions')
-        .select()
-        .eq('user_id', userId)
-        .order('created_at', ascending: false);
-
-    return (res as List).map((json) => ChatSession.fromJson(json)).toList();
-  }
-
-  // DELETE Session
-  Future<void> deleteSession(String sessionId) async {
-    await supabase.from('chat_sessions').delete().eq('id', sessionId);
-  }
-
-  // CREATE Message
-  Future<void> createMessage({
-    required String sessionId,
-    required String role,
-    required String text,
-  }) async {
-    await supabase.from('chat_messages').insert({
-      'session_id': sessionId,
-      'role': role,
-      'text': text,
-    });
-  }
-
-  // GET Messages in Session
-  Future<List<ChatMessage>> getMessages(String sessionId) async {
+  static Future<List<ChatMessage>> getMessages(String sessionId) async {
     final res = await supabase
         .from('chat_messages')
         .select()
         .eq('session_id', sessionId)
-        .order('created_at');
+        .order('created_at', ascending: true);
 
-    return (res as List).map((json) => ChatMessage.fromJson(json)).toList();
+    return (res as List)
+        .map((msg) => ChatMessage.fromJson(msg))
+        .toList();
   }
 
-  // DELETE Message
-  Future<void> deleteMessage(String messageId) async {
-    await supabase.from('chat_messages').delete().eq('id', messageId);
+  static Future<void> sendMessage({
+    required String sessionId,
+    required String role,
+    required String content,
+  }) async {
+    try {
+      debugPrint('[SEND] session_id: $sessionId, role: $role, content: $content');
+      await supabase.from('chat_messages').insert({
+        'session_id': sessionId,
+        'role': role,
+        'content': content,
+      });
+    } catch (e) {
+      debugPrint('Gagal kirim ke Supabase: $e');
+    }
+  }
+
+  static Future<ChatSession?> getLastSession(String? userId) async {
+    if (userId == null) return null;
+
+    final res = await supabase
+        .from('chat_sessions')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false)
+        .limit(1)
+        .maybeSingle();
+
+    return res != null ? ChatSession.fromJson(res) : null;
   }
 }
