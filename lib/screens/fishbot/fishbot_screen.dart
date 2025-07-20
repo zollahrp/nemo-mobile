@@ -6,6 +6,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../widgets/chat_bubble.dart';
 import '../../models/chat_session_model.dart';
+import 'package:nemo_mobile/screens/fishbot/history_screen.dart';
 import '../../models/chat_message_model.dart';
 import '../../services/chat_service.dart';
 
@@ -165,23 +166,16 @@ class _FishBotScreenState extends State<FishBotScreen> {
                   ),
                   TextButton(
                     onPressed: () {
-                      // nanti bisa navigasi ke halaman history, untuk sementara tampilkan alert
-                      showDialog(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Coming Soon'),
-                          content: const Text('Fitur Riwayat Chat belum tersedia.'),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: const Text('OK'),
-                            ),
-                          ],
+                      final userId = Supabase.instance.client.auth.currentUser?.id;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ChatHistoryScreen(userId: userId),
                         ),
                       );
                     },
                     child: const Text('History'),
-                  ),
+                  )
                 ],
               ),
             ),

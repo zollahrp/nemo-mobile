@@ -57,4 +57,45 @@ class ChatService {
 
     return res != null ? ChatSession.fromJson(res) : null;
   }
+
+    static Future<List<ChatSession>> getSessions(String? userId) async {
+    if (userId == null) return [];
+
+    final res = await supabase
+        .from('chat_sessions')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    return (res as List)
+        .map((session) => ChatSession.fromJson(session))
+        .toList();
+  }
+  static Future<List<ChatSession>> getAllSessions(String userId) async {
+    final res = await supabase
+        .from('chat_sessions')
+        .select()
+        .eq('user_id', userId)
+        .order('created_at', ascending: false);
+
+    return (res as List).map((s) => ChatSession.fromJson(s)).toList();
+  }
+  static Future<void> deleteSessionWithMessages(String sessionId) async {
+    try {
+      // Hapus pesan
+      await supabase
+          .from('chat_messages')
+          .delete()
+          .eq('session_id', sessionId);
+
+      // Hapus sesi
+      await supabase
+          .from('chat_sessions')
+          .delete()
+          .eq('id', sessionId);
+    } catch (e) {
+      debugPrint('Gagal menghapus sesi: $e');
+      throw Exception('Gagal menghapus sesi: $e');
+    }
+  }
 }
