@@ -7,9 +7,7 @@ import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-
-
-import 'scanner_detail_screen.dart';
+import 'scanning_screen.dart';
 
 class ScannerScreen extends StatefulWidget {
   const ScannerScreen({super.key});
@@ -99,111 +97,82 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Future<void> _performScan() async {
-    if (!_isModelReady || _interpreter == null) {
-      _showError("Model belum siap sepenuhnya.");
-      return;
-    }
-
-    if (!(_controller?.value.isInitialized ?? false)) {
-      _showError("Kamera belum siap");
-      return;
-    }
-
-    if (_controller!.value.isTakingPicture) {
-      _showError("Kamera sedang mengambil gambar...");
-      return;
-    }
-
-    try {
-      await _initializeControllerFuture;
-
-      final picture = await _controller!.takePicture();
-      final bytes = await File(picture.path).readAsBytes();
-      final image = img.decodeImage(bytes);
-
-      if (image == null) {
-        _showError("Gagal mengubah gambar");
-        return;
-      }
-
-      final input = _preprocess(image);
-      final outputShape = _interpreter.getOutputTensor(0).shape;
-      final output = List.filled(outputShape.reduce((a, b) => a * b), 0.0)
-          .reshape(outputShape);
-
-      _interpreter.run(input, output);
-
-      final scores = List<double>.from(output[0]);
-      final maxScore = scores.reduce((a, b) => a > b ? a : b);
-      final topIndex = scores.indexOf(maxScore);
-
-      final rawLabel = _labels[topIndex];
-      final cleanedLabel = rawLabel.replaceFirst(RegExp(r'^\d+\s*'), '');
-
-      final parts = cleanedLabel.split(' ');
-      final jenis = parts[0];
-      final status = parts.length > 1 ? parts.sublist(1).join(' ') : 'sehat';
-
-      if (mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ScannerDetailScreen(
-              jenisIkan: jenis,
-              status: status,
-            ),
-          ),
-        );
-      }
-    } catch (e) {
-      _showError("Scan error: $e");
-    }
+  if (!_isModelReady || _interpreter == null) {
+    _showError("Model belum siap sepenuhnya.");
+    return;
   }
+
+  if (!(_controller?.value.isInitialized ?? false)) {
+    _showError("Kamera belum siap");
+    return;
+  }
+
+  if (_controller!.value.isTakingPicture) {
+    _showError("Kamera sedang mengambil gambar...");
+    return;
+  }
+
+  await _initializeControllerFuture;
+  final picture = await _controller!.takePicture();
+  final file = File(picture.path);
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ScanningScreen(
+        processFuture: _runModel(file),
+      ),
+    ),
+  );
+}
+
 
   Future<void> _performScanFromFile(File file) async {
-    if (!_isModelReady || _interpreter == null) {
-      _showError("Model belum siap sepenuhnya.");
-      return;
-    }
-
-    final bytes = await file.readAsBytes();
-    final image = img.decodeImage(bytes);
-
-    if (image == null) {
-      _showError("Gagal mengubah gambar dari galeri");
-      return;
-    }
-
-    final input = _preprocess(image);
-    final outputShape = _interpreter.getOutputTensor(0).shape;
-    final output = List.filled(outputShape.reduce((a, b) => a * b), 0.0)
-        .reshape(outputShape);
-
-    _interpreter.run(input, output);
-
-    final scores = List<double>.from(output[0]);
-    final maxScore = scores.reduce((a, b) => a > b ? a : b);
-    final topIndex = scores.indexOf(maxScore);
-
-    final rawLabel = _labels[topIndex];
-    final cleanedLabel = rawLabel.replaceFirst(RegExp(r'^\d+\s*'), '');
-
-    final parts = cleanedLabel.split(' ');
-    final jenis = parts[0];
-    final status = parts.length > 1 ? parts.sublist(1).join(' ') : 'sehat';
-
-    if (mounted) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ScannerDetailScreen(
-            jenisIkan: jenis,
-            status: status,
-          ),
-        ),
-      );
-    }
+  if (!_isModelReady || _interpreter == null) {
+    _showError("Model belum siap sepenuhnya.");
+    return;
   }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ScanningScreen(
+        processFuture: _runModel(file),
+      ),
+    ),
+  );
+}
+
+Future<Map<String, String>> _runModel(File file) async {
+  final bytes = await file.readAsBytes();
+  final image = img.decodeImage(bytes);
+
+  if (image == null) throw Exception("Gagal mengubah gambar");
+
+  final input = _preprocess(image);
+  final outputShape = _interpreter.getOutputTensor(0).shape;
+  final output = List.filled(outputShape.reduce((a, b) => a * b), 0.0)
+      .reshape(outputShape);
+
+  _interpreter.run(input, output);
+
+  final scores = List<double>.from(output[0]);
+  final maxScore = scores.reduce((a, b) => a > b ? a : b);
+  final topIndex = scores.indexOf(maxScore);
+
+  final rawLabel = _labels[topIndex];
+  final cleanedLabel = rawLabel.replaceFirst(RegExp(r'^\d+\s*'), '');
+
+  final parts = cleanedLabel.split(' ');
+  final jenis = parts[0];
+  final status = parts.length > 1 ? parts.sublist(1).join(' ') : 'sehat';
+
+  return {
+    "jenis": jenis,
+    "status": status,
+  };
+}
+
 
   List<List<List<List<double>>>> _preprocess(img.Image image) {
     final resized = img.copyResize(image, width: 224, height: 224);
