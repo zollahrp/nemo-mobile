@@ -5,6 +5,9 @@ import 'package:image/image.dart' as img;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+
 
 import 'scanner_detail_screen.dart';
 
@@ -141,6 +144,51 @@ class _ScannerScreenState extends State<ScannerScreen> {
     }
   }
 
+  Future<void> _performScanFromFile(File file) async {
+    if (!_isModelReady || _interpreter == null) {
+      _showError("Model belum siap sepenuhnya.");
+      return;
+    }
+
+    final bytes = await file.readAsBytes();
+    final image = img.decodeImage(bytes);
+
+    if (image == null) {
+      _showError("Gagal mengubah gambar dari galeri");
+      return;
+    }
+
+    final input = _preprocess(image);
+    final outputShape = _interpreter.getOutputTensor(0).shape;
+    final output = List.filled(outputShape.reduce((a, b) => a * b), 0.0)
+        .reshape(outputShape);
+
+    _interpreter.run(input, output);
+
+    final scores = List<double>.from(output[0]);
+    final maxScore = scores.reduce((a, b) => a > b ? a : b);
+    final topIndex = scores.indexOf(maxScore);
+
+    final rawLabel = _labels[topIndex];
+    final cleanedLabel = rawLabel.replaceFirst(RegExp(r'^\d+\s*'), '');
+
+    final parts = cleanedLabel.split(' ');
+    final jenis = parts[0];
+    final status = parts.length > 1 ? parts.sublist(1).join(' ') : 'sehat';
+
+    if (mounted) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ScannerDetailScreen(
+            jenisIkan: jenis,
+            status: status,
+          ),
+        ),
+      );
+    }
+  }
+
   List<List<List<List<double>>>> _preprocess(img.Image image) {
     final resized = img.copyResize(image, width: 224, height: 224);
     final imageData = List.generate(224, (y) {
@@ -175,49 +223,132 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: SafeArea(
-        child: Stack(
-          children: [
-            _initializeControllerFuture != null
-                ? FutureBuilder(
-                    future: _initializeControllerFuture,
-                    builder: (context, snapshot) {
-                      if (snapshot.connectionState == ConnectionState.done) {
-                        return SizedBox.expand(
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.black,
+    body: SafeArea(
+      child: Stack(
+        children: [
+          _initializeControllerFuture != null
+              ? FutureBuilder(
+                  future: _initializeControllerFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.done) {
+                      return SizedBox.expand(
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
                           child: CameraPreview(_controller!),
-                        );
-                      } else {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                    },
-                  )
-                : const Center(child: CircularProgressIndicator()),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.qr_code_scanner, size: 48, color: Colors.white),
-                      onPressed: _isModelReady ? _performScan : null,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      _isModelReady ? 'Tekan untuk mulai scan' : 'Memuat model...',
-                      style: const TextStyle(color: Colors.white, fontSize: 15),
-                    ),
-                  ],
+                        ),
+                      );
+                    } else {
+                      return const Center(
+                        child: CircularProgressIndicator(
+                          color: Color(0xFF45B1F9),
+                        ),
+                      );
+                    }
+                  },
+                )
+              : const Center(child: CircularProgressIndicator()),
+
+          // Overlay Judul
+          Positioned(
+            top: 24,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Text(
+                  "Nemo.AI Scanner",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Tombol Scan
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Tombol ambil dari galeri
+                      GestureDetector(
+                        onTap: () async {
+                          final picker = ImagePicker();
+                          final picked = await picker.pickImage(source: ImageSource.gallery);
+                          if (picked != null) {
+                            final file = File(picked.path);
+                            await _performScanFromFile(file);
+                          }
+                        },
+                        child: Container(
+                          width: 60,
+                          height: 60,
+                          margin: const EdgeInsets.only(right: 24),
+                          decoration: BoxDecoration(
+                            color: Colors.white10,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white30),
+                          ),
+                          child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
+                        ),
+                      ),
+
+                      // Tombol kamera
+                      GestureDetector(
+                        onTap: _isModelReady ? _performScan : null,
+                        child: Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: _isModelReady ? const Color(0xFF45B1F9) : Colors.grey,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              if (_isModelReady)
+                                BoxShadow(
+                                  color: const Color(0xFF45B1F9).withOpacity(0.6),
+                                  blurRadius: 20,
+                                  spreadRadius: 2,
+                                ),
+                            ],
+                          ),
+                          child: const Icon(
+                            Icons.camera_alt_rounded,
+                            size: 36,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    _isModelReady ? "Scan dari kamera / galeri" : "Memuat model...",
+                    style: const TextStyle(color: Colors.white70, fontSize: 14),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 }
