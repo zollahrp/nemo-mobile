@@ -26,6 +26,22 @@ class _ScannerScreenState extends State<ScannerScreen> {
   late List<String> _labels;
 
   bool _isModelReady = false;
+  bool _isFlashOn = false;
+
+    void _toggleFlash() async {
+    if (_controller == null || !_controller!.value.isInitialized) return;
+
+    try {
+      await _controller!.setFlashMode(
+        _isFlashOn ? FlashMode.off : FlashMode.torch,
+      );
+      setState(() {
+        _isFlashOn = !_isFlashOn;
+      });
+    } catch (e) {
+      _showError("Gagal mengubah mode flash: $e");
+    }
+  }
 
   @override
   void initState() {
@@ -229,6 +245,7 @@ Widget build(BuildContext context) {
     body: SafeArea(
       child: Stack(
         children: [
+          // Kamera Preview
           _initializeControllerFuture != null
               ? FutureBuilder(
                   future: _initializeControllerFuture,
@@ -251,7 +268,7 @@ Widget build(BuildContext context) {
                 )
               : const Center(child: CircularProgressIndicator()),
 
-          // Overlay Judul
+          // Judul
           Positioned(
             top: 24,
             left: 0,
@@ -276,68 +293,84 @@ Widget build(BuildContext context) {
             ),
           ),
 
-          // Tombol Scan
+          // Flash Button (kiri bawah)
+          Positioned(
+            bottom: 30,
+            left: 30,
+            child: GestureDetector(
+              onTap: _toggleFlash,
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(
+                  _isFlashOn ? Icons.flash_on : Icons.flash_off,
+                  color: Colors.white,
+                  size: 28,
+                ),
+              ),
+            ),
+          ),
+
+          // Galeri Button (kanan bawah)
+          Positioned(
+            bottom: 30,
+            right: 30,
+            child: GestureDetector(
+              onTap: () async {
+                final picker = ImagePicker();
+                final picked = await picker.pickImage(source: ImageSource.gallery);
+                if (picked != null) {
+                  final file = File(picked.path);
+                  await _performScanFromFile(file);
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.5),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
+              ),
+            ),
+          ),
+
+          // Tombol Scan (tengah bawah)
           Align(
             alignment: Alignment.bottomCenter,
             child: Padding(
-              padding: const EdgeInsets.all(28),
+              padding: const EdgeInsets.only(bottom: 28),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      // Tombol ambil dari galeri
-                      GestureDetector(
-                        onTap: () async {
-                          final picker = ImagePicker();
-                          final picked = await picker.pickImage(source: ImageSource.gallery);
-                          if (picked != null) {
-                            final file = File(picked.path);
-                            await _performScanFromFile(file);
-                          }
-                        },
-                        child: Container(
-                          width: 60,
-                          height: 60,
-                          margin: const EdgeInsets.only(right: 24),
-                          decoration: BoxDecoration(
-                            color: Colors.white10,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white30),
-                          ),
-                          child: const Icon(Icons.photo_library, color: Colors.white, size: 28),
-                        ),
+                  GestureDetector(
+                    onTap: _isModelReady ? _performScan : null,
+                    child: Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: _isModelReady ? const Color(0xFF45B1F9) : Colors.grey,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          if (_isModelReady)
+                            BoxShadow(
+                              color: const Color(0xFF45B1F9).withOpacity(0.6),
+                              blurRadius: 20,
+                              spreadRadius: 2,
+                            ),
+                        ],
                       ),
-
-                      // Tombol kamera
-                      GestureDetector(
-                        onTap: _isModelReady ? _performScan : null,
-                        child: Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: _isModelReady ? const Color(0xFF45B1F9) : Colors.grey,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              if (_isModelReady)
-                                BoxShadow(
-                                  color: const Color(0xFF45B1F9).withOpacity(0.6),
-                                  blurRadius: 20,
-                                  spreadRadius: 2,
-                                ),
-                            ],
-                          ),
-                          child: const Icon(
-                            Icons.camera_alt_rounded,
-                            size: 36,
-                            color: Colors.white,
-                          ),
-                        ),
+                      child: const Icon(
+                        Icons.camera_alt_rounded,
+                        size: 36,
+                        color: Colors.white,
                       ),
-                    ],
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 12),
                   Text(
                     _isModelReady ? "Scan dari kamera / galeri" : "Memuat model...",
                     style: const TextStyle(color: Colors.white70, fontSize: 14),
