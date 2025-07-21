@@ -6,15 +6,37 @@ import 'package:flutter/foundation.dart';
 final supabase = Supabase.instance.client;
 
 class ChatService {
-  static Future<ChatSession> createSession(String? userId) async {
+  // static Future<ChatSession> createSession(String? userId) async {
+  //   final res = await supabase.from('chat_sessions').insert({
+  //     'user_id': userId,
+  //     'title': 'Sesi ${DateTime.now().toIso8601String()}',
+  //   }).select().single();
+
+  //   return ChatSession.fromJson(res);
+  // }
+static Future<ChatSession> createSession(String? userId) async {
+  final now = DateTime.now();
+    final formattedTitle = 'Obrolan ${_formatDate(now)}';
+
     final res = await supabase.from('chat_sessions').insert({
       'user_id': userId,
-      'title': 'Sesi ${DateTime.now().toIso8601String()}',
+      'title': formattedTitle,
     }).select().single();
 
     return ChatSession.fromJson(res);
   }
 
+  static String _formatDate(DateTime date) {
+    const monthNames = [
+      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    final day = date.day.toString().padLeft(2, '0');
+    final month = monthNames[date.month];
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return "$day $month ${date.year} $hour:$minute";
+  }
   static Future<List<ChatMessage>> getMessages(String sessionId) async {
     final res = await supabase
         .from('chat_messages')
@@ -108,5 +130,15 @@ class ChatService {
     if (response == null) return null;
 
     return ChatSession.fromJson(response);
+  }
+  static Future<void> updateSessionTitle(String sessionId, String newTitle) async {
+    final res = await supabase
+        .from('chat_sessions')
+        .update({'title': newTitle})
+        .eq('id', sessionId);
+
+    if (res.error != null) {
+      throw Exception('Gagal update judul sesi: ${res.error!.message}');
+    }
   }
 }

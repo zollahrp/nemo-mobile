@@ -14,6 +14,7 @@ class ChatHistoryScreen extends StatefulWidget {
 class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
   List<ChatSession> sessions = [];
   bool isLoading = true;
+  
 
   @override
   void initState() {
@@ -54,6 +55,36 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
     }
   }
 
+  Future<void> _showRenameDialog(ChatSession session) async {
+    final controller = TextEditingController(text: session.title);
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Ubah Judul Sesi'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(hintText: 'Judul baru'),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Batal'),
+            onPressed: () => Navigator.pop(context),
+          ),
+          ElevatedButton(
+            child: const Text('Simpan'),
+            onPressed: () => Navigator.pop(context, controller.text.trim()),
+          ),
+        ],
+      ),
+    );
+
+    if (result != null && result.isNotEmpty) {
+      await ChatService.updateSessionTitle(session.id, result);
+      await fetchSessions(); // refresh list
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,6 +97,26 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                   itemCount: sessions.length,
                   itemBuilder: (context, index) {
                     final session = sessions[index];
+                    // return ListTile(
+                    //   leading: const Icon(Icons.chat_bubble_outline),
+                    //   title: Text(session.title ?? "Tanpa Judul"),
+                    //   subtitle: Text(
+                    //     session.createdAt?.toLocal().toString() ?? "",
+                    //     style: const TextStyle(fontSize: 12),
+                    //   ),
+                    //   trailing: IconButton(
+                    //     icon: const Icon(Icons.delete_outline),
+                    //     onPressed: () => _confirmDeleteSession(session.id),
+                    //   ),
+                    //   onTap: () {
+                    //     Navigator.push(
+                    //       context,
+                    //       MaterialPageRoute(
+                    //         builder: (context) => FishBotScreen(sessionId: session.id),
+                    //       ),
+                    //     );
+                    //   },
+                    // );
                     return ListTile(
                       leading: const Icon(Icons.chat_bubble_outline),
                       title: Text(session.title ?? "Tanpa Judul"),
@@ -73,9 +124,18 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                         session.createdAt?.toLocal().toString() ?? "",
                         style: const TextStyle(fontSize: 12),
                       ),
-                      trailing: IconButton(
-                        icon: const Icon(Icons.delete_outline),
-                        onPressed: () => _confirmDeleteSession(session.id),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined),
+                            onPressed: () => _showRenameDialog(session),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline),
+                            onPressed: () => _confirmDeleteSession(session.id),
+                          ),
+                        ],
                       ),
                       onTap: () {
                         Navigator.push(
