@@ -66,12 +66,45 @@ class _ScannerDetailScreenState extends State<ScannerDetailScreen> {
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ikan == null
-              ? Center(
-                  child: Text(
-                    "Ikan '${widget.jenisIkan}' tidak ditemukan.",
-                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                  ),
-                )
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/fitur1.png', // kamu bisa ganti sesuai asset yg kamu punya
+                      width: 160,
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      "Ikan tidak dikenali",
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      "Yuk coba lagi dengan gambar yang lebih jelas\natau pastikan ikan kamu termasuk yang dikenal",
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(fontSize: 14, color: Colors.black54),
+                    ),
+                    const SizedBox(height: 24),
+                    ElevatedButton.icon(
+                      onPressed: () => Navigator.pop(context), // balik ke kamera
+                      icon: const Icon(Icons.camera_alt),
+                      label: const Text("Coba Scan Ulang"),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF45B1F9),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
               : Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: SingleChildScrollView(

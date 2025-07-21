@@ -157,8 +157,18 @@ Future<Map<String, String>> _runModel(File file) async {
   _interpreter.run(input, output);
 
   final scores = List<double>.from(output[0]);
+
+  // Ambil index confidence tertinggi
   final maxScore = scores.reduce((a, b) => a > b ? a : b);
   final topIndex = scores.indexOf(maxScore);
+
+  // Tambahin threshold (misal: 0.7 = 70%)
+  if (maxScore < 0.7) {
+    return {
+      "jenis": "Tidak dikenali",
+      "status": "-",
+    };
+  }
 
   final rawLabel = _labels[topIndex];
   final cleanedLabel = rawLabel.replaceFirst(RegExp(r'^\d+\s*'), '');
@@ -172,6 +182,7 @@ Future<Map<String, String>> _runModel(File file) async {
     "status": status,
   };
 }
+
 
 
   List<List<List<List<double>>>> _preprocess(img.Image image) {
