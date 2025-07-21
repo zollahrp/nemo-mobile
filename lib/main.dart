@@ -29,9 +29,7 @@ Future<void> main() async {
     realtimeClientOptions: const RealtimeClientOptions(
       logLevel: RealtimeLogLevel.info,
     ),
-    storageOptions: const StorageClientOptions(
-      retryAttempts: 10,
-    ),
+    storageOptions: const StorageClientOptions(retryAttempts: 10),
   );
 
   runApp(const MyApp());
@@ -65,3 +63,5 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// Tes perubahan
