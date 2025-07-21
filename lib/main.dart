@@ -8,6 +8,8 @@ import 'screens/auth/pilihan_login_screen.dart';
 import 'screens/auth/masuk_screen.dart';
 import 'screens/auth/daftar_screen.dart';
 import 'screens/fishbot/fishbot_screen.dart';
+import 'screens/ensiklopedia/detail_ikan_screen.dart';
+import 'models/IkanModel.dart';
 import 'screens/settings/akun_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/splash/splash_screen.dart';
@@ -60,6 +62,11 @@ class MyApp extends StatelessWidget {
         '/fishbot': (context) => const FishBotScreen(),
         '/akun': (context) => const AkunScreen(),
         '/main': (context) => const MainScreen(),
+        '/detail_ikan': (context) {
+          final data = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final ikanModel = IkanModel.fromMap(data);
+          return DetailIkanScreen(ikan: ikanModel);
+        },
       },
     );
   }

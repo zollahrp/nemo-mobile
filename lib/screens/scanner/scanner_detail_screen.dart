@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nemo_mobile/screens/ensiklopedia/detail_ikan_screen.dart';
 
 class ScannerDetailScreen extends StatefulWidget {
   final String jenisIkan;
@@ -39,56 +40,87 @@ class _ScannerDetailScreenState extends State<ScannerDetailScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Hasil Scan")),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : ikan == null
-              ? Center(child: Text("Ikan '${widget.jenisIkan}' tidak ditemukan."))
-              : Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          ikan!['gambar_url'],
-                          width: 200,
-                          height: 200,
-                          fit: BoxFit.cover,
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(title: const Text("Hasil Scan")),
+    body: isLoading
+        ? const Center(child: CircularProgressIndicator())
+        : ikan == null
+            ? Center(child: Text("Ikan '${widget.jenisIkan}' tidak ditemukan."))
+            : Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Gambar di kiri
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(
+                            ikan!['gambar_url'],
+                            width: 120,
+                            height: 120,
+                            fit: BoxFit.cover,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Text(
-                        ikan!['nama'],
-                        style: const TextStyle(
-                            fontSize: 24, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        ikan!['nama_ilmiah'],
-                        style: const TextStyle(
-                            fontSize: 16, color: Colors.grey),
-                      ),
-                      const SizedBox(height: 30),
-                      const Divider(),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Status",
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.status.toLowerCase() == 'sehat'
-                            ? "Ikan kamu sehat-sehat saja 🐟✨"
-                            : "Ikan kamu terkena ${widget.status} ⚠️",
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                    ],
-                  ),
+                        const SizedBox(width: 16),
+
+                        // Nama & nama ilmiah di kanan
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                ikan!['nama'],
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                ikan!['nama_ilmiah'],
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.grey),
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                "Pelajari lebih lengkap ikan ini dengan klik tombol di bawah ini.",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 8),
+                              ElevatedButton(
+                                onPressed: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  '/detail_ikan',
+                                  arguments: ikan, // kirim 1 data ikan lengkap
+                                );
+                              },
+                                child: const Text("Pelajari lebih lanjut"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 30),
+                    const Divider(),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "Status",
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      widget.status.toLowerCase() == 'sehat'
+                          ? "Ikan kamu sehat-sehat saja 🐟✨"
+                          : "Ikan kamu terkena ${widget.status} ⚠️",
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
                 ),
-    );
-  }
+              ),
+  );
+}
 }
