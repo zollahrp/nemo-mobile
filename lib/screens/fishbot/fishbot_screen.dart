@@ -10,8 +10,17 @@ import 'package:nemo_mobile/screens/fishbot/history_screen.dart';
 import '../../models/chat_message_model.dart';
 import '../../services/chat_service.dart';
 
+// class FishBotScreen extends StatefulWidget {
+//   const FishBotScreen({super.key});
+
+//   @override
+//   State<FishBotScreen> createState() => _FishBotScreenState();
+// }
+
 class FishBotScreen extends StatefulWidget {
-  const FishBotScreen({super.key});
+  final String? sessionId; // tambahkan ini
+
+  const FishBotScreen({super.key, this.sessionId});
 
   @override
   State<FishBotScreen> createState() => _FishBotScreenState();
@@ -28,21 +37,42 @@ class _FishBotScreenState extends State<FishBotScreen> {
     _loadSession();
   }
 
-  Future<void> _loadSession() async {
-    final userId = Supabase.instance.client.auth.currentUser?.id;
+  // Future<void> _loadSession() async {
+  //   final userId = Supabase.instance.client.auth.currentUser?.id;
 
+  //   var last = await ChatService.getLastSession(userId);
+
+  //   if (last == null) {
+  //     last = await ChatService.createSession(userId);
+  //   }
+
+  //   setState(() {
+  //     currentSession = last;
+  //   });
+
+  //   _loadMessages();
+  // }
+
+Future<void> _loadSession() async {
+  final userId = Supabase.instance.client.auth.currentUser?.id;
+
+  if (widget.sessionId != null) {
+    // load session lama
+    final session = await ChatService.getSessionById(widget.sessionId!);
+    setState(() {
+      currentSession = session;
+    });
+  } else {
+    // kalau nggak ada, buat baru
     var last = await ChatService.getLastSession(userId);
-
-    if (last == null) {
-      last = await ChatService.createSession(userId);
-    }
-
+    last ??= await ChatService.createSession(userId);
     setState(() {
       currentSession = last;
     });
-
-    _loadMessages();
   }
+
+  _loadMessages();
+}
 
   Future<void> _loadMessages() async {
     if (currentSession == null) return;
@@ -179,7 +209,6 @@ class _FishBotScreenState extends State<FishBotScreen> {
                 ],
               ),
             ),
-
 
             Expanded(
               child: _messages.isEmpty

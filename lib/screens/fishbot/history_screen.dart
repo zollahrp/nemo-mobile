@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/services/chat_service.dart';
+import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
 import 'package:nemo_mobile/models/chat_session_model.dart';
 
 class ChatHistoryScreen extends StatefulWidget {
@@ -77,7 +78,12 @@ class _ChatHistoryScreenState extends State<ChatHistoryScreen> {
                         onPressed: () => _confirmDeleteSession(session.id),
                       ),
                       onTap: () {
-                        // TODO: Navigasi ke halaman chat
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => FishBotScreen(sessionId: session.id),
+                          ),
+                        );
                       },
                     );
                   },

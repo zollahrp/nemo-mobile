@@ -98,4 +98,15 @@ class ChatService {
       throw Exception('Gagal menghapus sesi: $e');
     }
   }
+  static Future<ChatSession?> getSessionById(String sessionId) async {
+    final response = await Supabase.instance.client
+        .from('chat_sessions')
+        .select()
+        .eq('id', sessionId)
+        .maybeSingle();
+
+    if (response == null) return null;
+
+    return ChatSession.fromJson(response);
+  }
 }
