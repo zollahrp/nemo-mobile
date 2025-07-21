@@ -1,0 +1,4 @@
+0 Cupang Sehat
+1 Cupang White Spot
+2 Koi Sehat
+3 Koi Aeromoniasis

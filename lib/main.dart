@@ -50,7 +50,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const FiturScreen(),
+      // home: const FiturScreen(),
+      home: const MainScreen(),
       routes: {
         // '/fitur': (context) => const FiturScreen(),
         '/login': (context) => const PilihanLoginScreen(),
