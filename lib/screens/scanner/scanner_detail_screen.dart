@@ -54,113 +54,240 @@ class _ScannerDetailScreenState extends State<ScannerDetailScreen> {
     }
   }
 
-  @override
+@override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Hasil Scan")),
+      appBar: AppBar(
+        title: const Text("Hasil Scan"),
+        backgroundColor: const Color(0xFF45B1F9),
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : ikan == null
-              ? Center(child: Text("Ikan '${widget.jenisIkan}' tidak ditemukan."))
+              ? Center(
+                  child: Text(
+                    "Ikan '${widget.jenisIkan}' tidak ditemukan.",
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                )
               : Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.all(20.0),
                   child: SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.network(
-                                ikan!['gambar_url'],
-                                width: 120,
-                                height: 120,
-                                fit: BoxFit.cover,
+                        // HEADER IKAN
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black12,
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
+                            ],
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: Image.network(
+                                  ikan!['gambar_url'],
+                                  width: 110,
+                                  height: 110,
+                                  fit: BoxFit.cover,
+                                ),
+                              ),
+                              const SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      ikan!['nama'],
+                                      style: const TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      ikan!['nama_ilmiah'],
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey,
+                                        fontStyle: FontStyle.italic,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      '${ikan!['deskripsi'].toString().split(' ').take(10).join(' ')}...',
+                                      style: const TextStyle(fontSize: 14),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: const Color(0xFF45B1F9),
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(10),
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        Navigator.pushNamed(
+                                          context,
+                                          '/detail_ikan',
+                                          arguments: ikan,
+                                        );
+                                      },
+                                      child: const Text(
+                                        "Pelajari lebih lanjut",
+                                        style: TextStyle(fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 32),
+
+                        // STATUS
+                        const Text(
+                          "Status",
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: widget.status.toLowerCase() == 'sehat'
+                                ? const Color(0xFFD6F5D6)
+                                : const Color(0xFFFFE6E6),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                widget.status.toLowerCase() == 'sehat'
+                                    ? Icons.check_circle_outline
+                                    : Icons.warning_amber_outlined,
+                                color: widget.status.toLowerCase() == 'sehat'
+                                    ? Colors.green
+                                    : Colors.redAccent,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  widget.status.toLowerCase() == 'sehat'
+                                      ? "Ikan kamu sehat-sehat saja 🐟✨"
+                                      : "Ikan kamu terkena ${widget.status} ⚠️",
+                                  style: const TextStyle(fontSize: 16),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // PENYAKIT (JIKA ADA)
+                        if (widget.status.toLowerCase() != 'sehat' && penyakitList.isNotEmpty) ...[
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Penyakit yang Mungkin Terjadi",
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          const SizedBox(height: 12),
+                          ...penyakitList.map(
+                            (p) => Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black12,
+                                    blurRadius: 6,
+                                    offset: const Offset(0, 3),
+                                  )
+                                ],
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    ikan!['nama'],
-                                    style: const TextStyle(
-                                        fontSize: 22, fontWeight: FontWeight.bold),
+                                    p.nama,
+                                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                                   ),
-                                  Text(
-                                    ikan!['nama_ilmiah'],
-                                    style: const TextStyle(
-                                        fontSize: 16, color: Colors.grey),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    "Pelajari lebih lengkap ikan ini dengan klik tombol di bawah ini.",
-                                    style: TextStyle(fontSize: 14),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.pushNamed(
-                                        context,
-                                        '/detail_ikan',
-                                        arguments: ikan,
-                                      );
-                                    },
-                                    child: const Text("Pelajari lebih lanjut"),
-                                  ),
+                                  const SizedBox(height: 6),
+                                  Text("Deskripsi: ${p.deskripsi}"),
+                                  Text("Gejala: ${p.gejala}"),
+                                  Text("Solusi: ${p.solusi}"),
                                 ],
                               ),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                        const Divider(),
-                        const SizedBox(height: 12),
-                        const Text(
-                          "Status",
-                          style: TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.status.toLowerCase() == 'sehat'
-                              ? "Ikan kamu sehat-sehat saja 🐟✨"
-                              : "Ikan kamu terkena ${widget.status} ⚠️",
-                          style: const TextStyle(fontSize: 16),
-                        ),
-
-                        // Penyakit List
-                        if (widget.status.toLowerCase() != 'sehat' && penyakitList.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          const Text(
-                            "Penyakit yang mungkin terjadi",
-                            style: TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
                           ),
-                          const SizedBox(height: 8),
-                          ...penyakitList.map((p) => Padding(
-                            padding: const EdgeInsets.only(bottom: 16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  p.nama,
-                                  style: const TextStyle(
-                                      fontSize: 16, fontWeight: FontWeight.bold),
-                                ),
-                                const SizedBox(height: 4),
-                                Text("Deskripsi: ${p.deskripsi}"),
-                                const SizedBox(height: 4),
-                                Text("Gejala: ${p.gejala}"),
-                                const SizedBox(height: 4),
-                                Text("Solusi: ${p.solusi}"),
-                              ],
-                            ),
-                          )),
                         ],
+
+                        const SizedBox(height: 32),
+
+                        // CATATAN
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF0F8FF),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: const Color(0xFF45B1F9), width: 1.2),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Catatan",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF45B1F9),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                "Scanner Nemo.AI memiliki akurasi sekitar 80%. "
+                                "Jika kamu masih ragu atau ingin konsultasi lebih lanjut, "
+                                "kamu bisa bertanya langsung ke Fishbot.",
+                                style: TextStyle(fontSize: 14),
+                              ),
+                              const SizedBox(height: 16),
+                              Center(
+                                child: ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF45B1F9),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.pushNamed(context, '/fishbot');
+                                  },
+                                  icon: const Icon(Icons.chat_bubble_outline),
+                                  label: const Text("Tanya ke Fishbot"),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
                       ],
                     ),
                   ),
