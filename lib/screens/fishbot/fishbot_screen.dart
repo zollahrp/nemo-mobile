@@ -3,22 +3,15 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-
+import 'package:shimmer/shimmer.dart';
 import '../../widgets/chat_bubble.dart';
 import '../../models/chat_session_model.dart';
 import 'package:nemo_mobile/screens/fishbot/history_screen.dart';
 import '../../models/chat_message_model.dart';
 import '../../services/chat_service.dart';
 
-// class FishBotScreen extends StatefulWidget {
-//   const FishBotScreen({super.key});
-
-//   @override
-//   State<FishBotScreen> createState() => _FishBotScreenState();
-// }
-
 class FishBotScreen extends StatefulWidget {
-  final String? sessionId; // tambahkan ini
+  final String? sessionId;
 
   const FishBotScreen({super.key, this.sessionId});
 
@@ -28,8 +21,11 @@ class FishBotScreen extends StatefulWidget {
 
 class _FishBotScreenState extends State<FishBotScreen> {
   final TextEditingController _controller = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+
   ChatSession? currentSession;
   List<ChatMessage> _messages = [];
+  bool _isTyping = false;
 
   @override
   void initState() {
@@ -37,63 +33,45 @@ class _FishBotScreenState extends State<FishBotScreen> {
     _loadSession();
   }
 
-  // Future<void> _loadSession() async {
-  //   final userId = Supabase.instance.client.auth.currentUser?.id;
+  Future<void> _loadSession() async {
+    final userId = Supabase.instance.client.auth.currentUser?.id;
 
-  //   var last = await ChatService.getLastSession(userId);
+    if (widget.sessionId != null) {
+      final session = await ChatService.getSessionById(widget.sessionId!);
+      setState(() => currentSession = session);
+    } else {
+      var last = await ChatService.getLastSession(userId);
+      last ??= await ChatService.createSession(userId);
+      setState(() => currentSession = last);
+    }
 
-  //   if (last == null) {
-  //     last = await ChatService.createSession(userId);
-  //   }
-
-  //   setState(() {
-  //     currentSession = last;
-  //   });
-
-  //   _loadMessages();
-  // }
-
-Future<void> _loadSession() async {
-  final userId = Supabase.instance.client.auth.currentUser?.id;
-
-  if (widget.sessionId != null) {
-    // load session lama
-    final session = await ChatService.getSessionById(widget.sessionId!);
-    setState(() {
-      currentSession = session;
-    });
-  } else {
-    // kalau nggak ada, buat baru
-    var last = await ChatService.getLastSession(userId);
-    last ??= await ChatService.createSession(userId);
-    setState(() {
-      currentSession = last;
-    });
+    _loadMessages();
   }
-
-  _loadMessages();
-}
 
   Future<void> _loadMessages() async {
     if (currentSession == null) return;
-
     final msgs = await ChatService.getMessages(currentSession!.id);
-    setState(() {
-      _messages = msgs;
+    setState(() => _messages = msgs);
+    _scrollToBottom();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent + 100,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut, // sebelumnya Curves.easeOut
+        );
+      }
     });
   }
 
-  Future<void> sendMessage() async {
-    final inputText = _controller.text.trim();
+  Future<void> sendMessage([String? customText]) async {
+    final inputText = (customText ?? _controller.text).trim();
     final userId = Supabase.instance.client.auth.currentUser?.id;
-    debugPrint('Kirim message: $inputText');
+    if (inputText.isEmpty || currentSession == null || userId == null) return;
 
-    if (inputText.isEmpty || currentSession == null || userId == null) {
-      debugPrint('Gagal kirim pesan: input kosong atau user belum login.');
-      return;
-    }
-
-    // Simpan pesan user
     await ChatService.sendMessage(
       sessionId: currentSession!.id,
       role: 'user',
@@ -108,9 +86,12 @@ Future<void> _loadSession() async {
         createdAt: DateTime.now(),
       ));
       _controller.clear();
+      _isTyping = true; 
     });
+    _scrollToBottom();
 
-    // Kirim ke Gemini
+    await Future.delayed(const Duration(seconds: 1));
+
     final apiKey = dotenv.env['GEMINI_API_KEY'];
     final uri = Uri.https(
       'generativelanguage.googleapis.com',
@@ -126,9 +107,7 @@ Future<void> _loadSession() async {
           "contents": [
             {
               "role": "user",
-              "parts": [
-                {"text": inputText}
-              ]
+              "parts": [{"text": inputText}]
             }
           ]
         }),
@@ -144,37 +123,48 @@ Future<void> _loadSession() async {
         content: replyText,
       );
 
+      setState(() {
+        _isTyping = false;
+      });
       _loadMessages();
-    } catch (e) {
+    } catch (_) {
       await ChatService.sendMessage(
         sessionId: currentSession!.id,
         role: 'assistant',
         content: 'Terjadi error saat menghubungi AI.',
       );
+      setState(() => _isTyping = false);
       _loadMessages();
     }
   }
 
+  final List<String> quickSuggestions = [
+    "Rekomendasi ikan untuk pemula 🐠",
+    "Cara merawat akuarium air tawar 🌿",
+    "Penyakit umum ikan dan solusinya 💊",
+  ];
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       body: SafeArea(
         child: Column(
           children: [
             const SizedBox(height: 16),
-            Image.asset('lib/assets/images/logo.png', width: 100),
-            const SizedBox(height: 12),
+            Image.asset('lib/assets/images/logo.png', width: 90),
+            const SizedBox(height: 8),
             const Text(
-              'Membutuhkan bantuan?',
+              'Butuh Bantuan Ikan Hias?',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Text(
-              'AI kami siap bantu Kamu\nmasalah ikan hias apa pun!',
-              textAlign: TextAlign.center,
+              'Tanyakan apapun ke Fishbot ✨',
               style: TextStyle(color: Colors.black54),
             ),
-            const Divider(),
-
+            const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
@@ -184,13 +174,17 @@ Future<void> _loadSession() async {
                     onPressed: () async {
                       final userId = Supabase.instance.client.auth.currentUser?.id;
                       if (userId == null) return;
-
                       final newSession = await ChatService.createSession(userId);
                       setState(() {
                         currentSession = newSession;
                         _messages = [];
                       });
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF45B1F9),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                    ),
                     icon: const Icon(Icons.add),
                     label: const Text('New Chat'),
                   ),
@@ -204,52 +198,101 @@ Future<void> _loadSession() async {
                         ),
                       );
                     },
-                    child: const Text('History'),
-                  )
+                    child: const Text('Riwayat', style: TextStyle(color: Color(0xFF45B1F9))),
+                  ),
                 ],
               ),
             ),
+            const SizedBox(height: 8),
+            const Divider(height: 0),
+            
 
+            // Chat
             Expanded(
-              child: _messages.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Belum ada percakapan.',
-                        style: TextStyle(color: Colors.black54),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _messages.length,
-                      itemBuilder: (context, index) {
-                        final message = _messages[index];
-                        return ChatBubble(message: message);
-                      },
-                    ),
-            ),
-
-            Container(
-              margin: const EdgeInsets.all(16),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
+              child: Column(
                 children: [
+                  // List bubble chat atau quick suggestions
                   Expanded(
-                    child: TextField(
-                      controller: _controller,
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        hintText: 'Ketik pertanyaan di sini...',
-                      ),
-                      onSubmitted: (_) => sendMessage(),
-                    ),
+                    child: _messages.isEmpty
+                        ? SingleChildScrollView(
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Coba pertanyaan ini:',
+                                  style: TextStyle(fontSize: 14.5, color: Colors.black54),
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 4,
+                                  children: quickSuggestions.map((suggestion) {
+                                    return ActionChip(
+                                      label: Text(suggestion),
+                                      backgroundColor: const Color(0xFFE3F2FD),
+                                      shape: StadiumBorder(
+                                        side: BorderSide(color: Colors.blue.shade100),
+                                      ),
+                                      onPressed: () {
+                                        _controller.text = suggestion;
+                                        sendMessage(suggestion);
+                                      },
+                                    );
+                                  }).toList(),
+                                ),
+                              ],
+                            ),
+                          )
+                        : ListView.builder(
+                            controller: _scrollController,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            itemCount: _messages.length + (_isTyping ? 1 : 0),
+                            itemBuilder: (context, index) {
+                              if (index == _messages.length && _isTyping) {
+                                return const TypingIndicatorBubble();
+                              }
+                              return ChatBubble(message: _messages[index]);
+                            },
+                          ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: sendMessage,
+
+                  // Input Field
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                    color: Colors.white,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _controller,
+                            decoration: InputDecoration(
+                              hintText: 'Ketik pertanyaan di sini...',
+                              filled: true,
+                              fillColor: const Color(0xFFF0F8FF),
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(28),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onSubmitted: (_) => sendMessage(),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: sendMessage,
+                          child: Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Color(0xFF45B1F9),
+                            ),
+                            child: const Icon(Icons.send, color: Colors.white, size: 20),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -257,6 +300,63 @@ Future<void> _loadSession() async {
           ],
         ),
       ),
+    );
+  }
+}
+
+
+
+class TypingIndicatorBubble extends StatefulWidget {
+  const TypingIndicatorBubble({super.key});
+
+  @override
+  State<TypingIndicatorBubble> createState() => _TypingIndicatorBubbleState();
+}
+
+class _TypingIndicatorBubbleState extends State<TypingIndicatorBubble> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _dotAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(duration: const Duration(milliseconds: 900), vsync: this)..repeat();
+    _dotAnimation = Tween<double>(begin: 0, end: 3).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  String getDots() {
+    final dots = '.' * (_dotAnimation.value.floor() + 1);
+    return dots.padRight(3, '.');
+  }
+
+  @override
+    Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _dotAnimation,
+      builder: (context, child) {
+        return Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: Container(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: Colors.grey[300],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Fishbot sedang mengetik${getDots()}',
+              style: const TextStyle(color: Colors.black54),
+            ),
+          ),
+        );
+      },
     );
   }
 }
