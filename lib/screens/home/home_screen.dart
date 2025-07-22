@@ -3,6 +3,8 @@ import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/home/artikel_screen.dart';
 import 'package:nemo_mobile/data/dummy_artikel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nemo_mobile/screens/ensiklopedia/detail_ikan_screen.dart';
+import 'package:nemo_mobile/models/IkanModel.dart';
 import 'dart:ui'; 
 
 final user = Supabase.instance.client.auth.currentUser;
@@ -37,36 +39,38 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: SingleChildScrollView(
-              child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildHorizontalBanner(),
-                    
-                  const SizedBox(height: 24),
-                  buildTopFiturSection(),
-                  const SizedBox(height: 24),
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: Column(
+      children: [
+        _buildHeader(),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHorizontalBanner(),
+                const SizedBox(height: 24),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Yuk mulai dengan membaca ini!',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                buildTopFiturSection(),
+                const SizedBox(height: 24),
+
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  child: Text(
+                    'Yuk mulai dengan membaca ini!',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      color: Colors.black87,
                     ),
                   ),
+                ),
+                const SizedBox(height: 12),
 
-                    const SizedBox(height: 12),
-                  
-                  Padding(
-                    padding: const EdgeInsets.only(left: 16),
-                    child: SizedBox(
+                Padding(
+                  padding: const EdgeInsets.only(left: 16),
+                  child: SizedBox(
                     height: 180,
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
@@ -93,49 +97,151 @@ class _HomeScreenState extends State<HomeScreen> {
                       },
                     ),
                   ),
-                  ),
-                  const SizedBox(height: 24),
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text(
-                      'Kategori',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
+                ),
 
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                    constraints: const BoxConstraints(maxHeight: 600), // batas tinggi biar gak ngambil banyak ruang
-                    child: GridView.count(
-                      padding: EdgeInsets.zero, // buang padding internal
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 3 / 2, // biar lebih lebar, gak terlalu tinggi
-                      children: [
-                        _buildCategoryTile('Ikan Air Tawar', 'lib/assets/images/ikan_air_tawar.jpg'),
-                        _buildCategoryTile('Ikan Laut', 'lib/assets/images/ikan_laut.jpg'),
-                        _buildCategoryTile('Ikan Air Payau', 'lib/assets/images/ikan_air_payau.jpg'),
-                        _buildCategoryTile('Ikan Air Dingin', 'lib/assets/images/ikan_air_dingin.jpg'),
-                        _buildCategoryTile('Ikan Predator', 'lib/assets/images/ikan_predator.jpg'),
-                        _buildCategoryTile('Invertebrata', 'lib/assets/images/invertebrata.jpg'),
-                      ],
-                    ),
+                const SizedBox(height: 24),
+
+                // === Section Judul + Lihat Semua ===
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Ensiklopedia Ikan Hias',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => ListIkanScreen()),
+                          );
+                        },
+                        child: const Text(
+                          'Lihat semua',
+                          style: TextStyle(
+                            color: Color(0xFF45B1F9),
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                  ),
-                ],
-              ),
-            ),
+                ),
+
+                const SizedBox(height: 12),
+
+                FutureBuilder(
+                  future: Supabase.instance.client.from('ikan').select().limit(5),
+                  builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return const Padding(
+                        padding: EdgeInsets.all(24),
+                        child: Center(child: CircularProgressIndicator()),
+                      );
+                    }
+
+                    final data = (snapshot.data as List)
+                        .map((e) => IkanModel.fromMap(e))
+                        .toList();
+
+                    return Column(
+                      children: data.map((ikan) {
+                        return GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => DetailIkanScreen(ikan: ikan),
+                              ),
+                            );
+                          },
+                          child: Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black12,
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              children: [
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.network(
+                                    ikan.gambarUrl,
+                                    width: 56,
+                                    height: 56,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => Container(
+                                      width: 56,
+                                      height: 56,
+                                      color: Colors.grey[300],
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 14),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        ikan.nama,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                      Text(
+                                        ikan.namaIlmiah,
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          fontStyle: FontStyle.italic,
+                                          color: Colors.grey,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${ikan.deskripsi.split(' ').take(10).join(' ')}...',
+                                        style: const TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.black87,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   // ✅ Dipindah ke luar build()
   Widget _buildHorizontalBanner() {
@@ -151,7 +257,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'bgColor': const Color(0xFFE0F7E9),
         'image': 'lib/assets/images/fitur1.png',      },
       {
-        'title': 'Biar makin jago, yuk belajar soal ikan!',
+        'title': 'Biar makin jago, yuk belajar soal ikan hias!',
         'buttonText': 'Lihat Sekarang',
         'bgColor': const Color(0xFFF5E9FF),
         'image': 'lib/assets/images/fitur1.png',      },
@@ -506,67 +612,6 @@ Widget buildTopFiturSection() {
                         color: Colors.white70,
                         fontSize: 12,
                       ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryTile(String title, String imageUrl) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ListIkanScreen(kategori: title),
-          ),
-        );
-      },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Image.asset(
-                imageUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 60,
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Colors.transparent, Colors.black54],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              bottom: 12,
-              left: 12,
-              right: 12,
-              child: Text(
-                title,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  shadows: [
-                    Shadow(
-                      blurRadius: 2,
-                      color: Colors.black54,
-                      offset: Offset(1, 1),
                     ),
                   ],
                 ),
