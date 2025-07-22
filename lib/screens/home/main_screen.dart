@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
+import 'package:nemo_mobile/screens/akuarium/Set_Ecosystem_Screen.dart';
 import 'package:nemo_mobile/screens/home/home_screen.dart';
 import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
 import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
+import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
+import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
+
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -19,6 +23,9 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
+    // const AkuariumScreen(),
+    const SetEcosystemScreen(),
+    const ListIkanScreen(),
     const ScannerScreen(),
     const FishBotScreen(),
   ];
@@ -61,6 +68,14 @@ class _MainScreenState extends State<MainScreen> {
               Padding(
                 padding: EdgeInsets.only(top: 0),
                 child: Icon(Icons.home, size: 30, color: Color(0xFF0E91E9),),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 0),
+                child: Icon(Icons.water_rounded, size: 30, color: Color(0xFF0E91E9)),          
+              ),
+                Padding(
+                  padding: EdgeInsets.only(top: 5),
+                  child: Icon(Icons.book_rounded, size: 30, color: Color(0xFF0E91E9)), // Ensiklopedia
               ),
               Padding(
                 padding: EdgeInsets.only(top: 5),
