@@ -60,15 +60,15 @@ class _MainScreenState extends State<MainScreen> {
             items: const <Widget>[
               Padding(
                 padding: EdgeInsets.only(top: 0),
-                child: Icon(Icons.home, size: 30, color: Colors.black),
+                child: Icon(Icons.home, size: 30, color: Color(0xFF0E91E9),),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 5),
-                child: Icon(Icons.qr_code_scanner, size: 30, color: Colors.black),
+                child: Icon(Icons.qr_code_scanner, size: 30, color: Color(0xFF0E91E9),),
               ),
               Padding(
                 padding: EdgeInsets.only(top: 5),
-                child: Icon(Icons.auto_awesome, size: 30, color: Colors.black),
+                child: Icon(Icons.auto_awesome, size: 30, color: Color(0xFF0E91E9),),
               ),
             ],
             onTap: (index) {
