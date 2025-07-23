@@ -501,7 +501,7 @@ Widget buildTopFiturSection() {
       'iconColor': Color(0xFFFF6D00),
     },
     {
-      'label': 'Rekomendasi Obat & Produk',
+      'label': 'Rekomendasi Obat',
       'icon': Icons.local_pharmacy,
       'color': Color(0xFFFFD7D7),
       'iconColor': Color(0xFFD50000),
@@ -511,12 +511,6 @@ Widget buildTopFiturSection() {
       'icon': Icons.book,
       'color': Color(0xFFFFF9C4),
       'iconColor': Color(0xFFFBC02D),
-    },
-    {
-      'label': 'Riwayat Akuarium',
-      'icon': Icons.history,
-      'color': Color(0xFFD7CCC8),
-      'iconColor': Color(0xFF5D4037),
     },
     {
       'label': 'Checklist Harian',
