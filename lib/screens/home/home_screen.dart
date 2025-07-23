@@ -250,22 +250,22 @@ class _HomeScreenState extends State<HomeScreen> {
         'title': 'Cek dulu yuk, ikan kamu lagi baik-baik aja gak ya?',
         'buttonText': 'Mulai Diagnosa',
         'bgColor': const Color(0xFFD4EDFF),
-        'image': 'lib/assets/images/fitur1.png',      },
+        'image': 'lib/assets/images/banner1.png',      },
       {
         'title': 'Yuk, rawat ikan kesayangan kamu bersama Nemo!',
         'buttonText': 'Lihat Checklist Harian',
         'bgColor': const Color(0xFFE0F7E9),
-        'image': 'lib/assets/images/fitur1.png',      },
+        'image': 'lib/assets/images/banner2.png',      },
       {
         'title': 'Biar makin jago, yuk belajar soal ikan hias!',
         'buttonText': 'Lihat Sekarang',
         'bgColor': const Color(0xFFF5E9FF),
-        'image': 'lib/assets/images/fitur1.png',      },
+        'image': 'lib/assets/images/banner3.png',      },
       {
         'title': 'Kalau kamu jadi ikan, kamu jadi yang mana ya?',
         'buttonText': 'Mau tau',
         'bgColor': const Color(0xFFFFF5E0),
-        'image': 'lib/assets/images/fitur1.png',      },
+        'image': 'lib/assets/images/banner4.png',      },
     ];
 
     return SizedBox(
@@ -275,64 +275,75 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.only(left: 16),
         itemCount: bannerData.length,
         separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (context, index) {
-          final isLast = index == bannerData.length - 1;
+          itemBuilder: (context, index) {
+            final data = bannerData[index]; // ✅ PENTING
 
-          final data = bannerData[index];
-         return Container(
-          width: 300,
-          height: 100,
-          margin: const EdgeInsets.only(right: 12),
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            color: data['bgColor'],
-            borderRadius: BorderRadius.circular(16),
-          ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        data['title'],
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      ElevatedButton(
-                        onPressed: () {
-                          // aksi
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          minimumSize: const Size(10, 32), // biar gak auto-besar
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap, // hapus area klik default gede
-                          textStyle: const TextStyle(fontSize: 12),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(8),
+            return Container(
+              width: 300,
+              margin: const EdgeInsets.only(right: 12),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: data['bgColor'],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        // Text + tombol
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                data['title'],
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 12),
+                              ElevatedButton(
+                                onPressed: () {},
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: Colors.black,
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  minimumSize: const Size(10, 32),
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                  textStyle: const TextStyle(fontSize: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(data['buttonText']),
+                              ),
+                            ],
                           ),
                         ),
-                        child: const Text("Coba Sekarang"), // atau pakai data['buttonText']
-                      ),
-                    ],
+                        const SizedBox(width: 60),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Image.asset(
-                  data['image'],
-                  width: 60,
-                  height: 60,
-                ),
-              ],
-            ),
-          );
-        },
+
+                  // Gambar di luar layout
+                  Positioned(
+                    right: -20,
+                    top: 15,
+                    child: Image.asset(
+                      data['image'],
+                      width: 130,
+                      height: 130,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
       ),
     );
   }
