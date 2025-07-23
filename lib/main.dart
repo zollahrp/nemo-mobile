@@ -56,7 +56,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: hasSeenOnboarding ? const MainScreen() : const FiturScreen(),
+      home: SplashScreen(hasSeenOnboarding: hasSeenOnboarding),
       routes: {
         '/login': (context) => const PilihanLoginScreen(),
         '/masuk': (context) => const LoginScreen(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/widgets/custom_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nemo_mobile/screens/splash/splash_screen.dart';
 
 
 class FiturScreen extends StatefulWidget {
@@ -9,7 +10,6 @@ class FiturScreen extends StatefulWidget {
   @override
   State<FiturScreen> createState() => _FiturScreenState();
 }
-
 class _FiturScreenState extends State<FiturScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
