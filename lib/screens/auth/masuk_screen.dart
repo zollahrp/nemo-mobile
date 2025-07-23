@@ -1,164 +1,9 @@
-// import 'package:flutter/material.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
-// import 'package:nemo_mobile/services/auth_service.dart';
-
-// class MasukScreen extends StatefulWidget {
-//   const MasukScreen({super.key});
-
-//   @override
-//   State<MasukScreen> createState() => _MasukScreenState();
-// }
-// class _MasukScreenState extends State<MasukScreen> {
-//   final emailController = TextEditingController();
-//   final passwordController = TextEditingController();
-//   bool isLoading = false;
-
-//   Future<void> login() async {
-//     setState(() => isLoading = true);
-//     try {
-//       final response = await Supabase.instance.client.auth.signInWithPassword(
-//         email: emailController.text.trim(),
-//         password: passwordController.text.trim(),
-//       );
-//       if (response.user != null) {
-//         Navigator.pushReplacementNamed(context, '/home');
-//       } else {
-//         showDialog(
-//           context: context,
-//           builder: (_) => const AlertDialog(
-//             title: Text('Gagal Login'),
-//             content: Text('Email atau password salah'),
-//           ),
-//         );
-//       }
-//     } catch (e) {
-//       showDialog(
-//         context: context,
-//         builder: (_) => AlertDialog(
-//           title: const Text('Error'),
-//           content: Text(e.toString()),
-//         ),
-//       );
-//     } finally {
-//       setState(() => isLoading = false);
-//     }
-//   }
-
-//   Future<void> loginWithGoogle() async {
-//     try {
-//       await Supabase.instance.client.auth.signInWithOAuth(OAuthProvider.google);
-//     } catch (e) {
-//       print('Login Google gagal: $e');
-//     }
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         leading: const BackButton(color: Colors.black),
-//         elevation: 0,
-//         backgroundColor: Colors.white,
-//         centerTitle: true,
-//         title: const Text(
-//           'Masuk',
-//           style: TextStyle(
-//             color: Colors.black,
-//             fontWeight: FontWeight.bold,
-//           ),
-//         ),
-//       ),
-//       backgroundColor: Colors.white,
-//       body: Padding(
-//         padding: const EdgeInsets.symmetric(horizontal: 24),
-//         child: SingleChildScrollView(
-//           child: Column(
-//             children: [
-//               const SizedBox(height: 24),
-//               Image.asset('lib/assets/images/logo_kesamping.png', height: 80),
-//               const SizedBox(height: 24),
-//               Image.asset('lib/assets/images/masuk.png', height: 200),
-//               const SizedBox(height: 24),
-//               const Text(
-//                 "Hai! Selamat datang kembali!",
-//                 textAlign: TextAlign.center,
-//                 style: TextStyle(
-//                   fontSize: 18,
-//                   fontWeight: FontWeight.bold,
-//                   height: 1.5,
-//                 ),
-//               ),
-//               const SizedBox(height: 32),
-//               TextField(
-//                 controller: emailController,
-//                 decoration: InputDecoration(
-//                   labelText: 'Email',
-//                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-//                 ),
-//               ),
-//               const SizedBox(height: 16),
-//               TextField(
-//                 controller: passwordController,
-//                 obscureText: true,
-//                 decoration: InputDecoration(
-//                   labelText: 'Password',
-//                   suffixIcon: const Icon(Icons.visibility_off),
-//                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-//                 ),
-//               ),
-//               const SizedBox(height: 12),
-//               Align(
-//                 alignment: Alignment.centerRight,
-//                 child: TextButton(
-//                   onPressed: () {},
-//                   child: const Text(
-//                     'Lupa Password?',
-//                     style: TextStyle(color: Color(0xFF0E91E9)),
-//                   ),
-//                 ),
-//               ),
-//               const SizedBox(height: 24),
-//               SizedBox(
-//                 width: double.infinity,
-//                 child: ElevatedButton(
-//                   onPressed: isLoading ? null : login,
-//                   style: ElevatedButton.styleFrom(
-//                     backgroundColor: const Color(0xFF45B1F9),
-//                     padding: const EdgeInsets.symmetric(vertical: 16),
-//                     shape: RoundedRectangleBorder(
-//                       borderRadius: BorderRadius.circular(12),
-//                     ),
-//                   ),
-//                   child: isLoading
-//                       ? const CircularProgressIndicator(color: Colors.white)
-//                       : const Text(
-//                           'Masuk',
-//                           style: TextStyle(
-//                             color: Colors.white,
-//                             fontWeight: FontWeight.bold,
-//                           ),
-//                         ),
-//                 ),
-//               ),
-//               const SizedBox(height: 16),
-//               TextButton.icon(
-//                 onPressed: loginWithGoogle,
-//                 icon: const Icon(Icons.login),
-//                 label: const Text('Masuk dengan Google'),
-//               ),
-//             ],
-//           ),
-//         ),
-//       ),
-//     );
-//   }
-// }
-
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:nemo_mobile/main.dart';
 import 'package:nemo_mobile/screens/home/main_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -175,14 +20,29 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _setupAuthListener() {
-    supabase.auth.onAuthStateChange.listen((data) {
+    // supabase.auth.onAuthStateChange.listen((data) {
+    //   final event = data.event;
+    //   if (event == AuthChangeEvent.signedIn) {
+    //     // Navigator.of(context).pushReplacement(
+    //     //   MaterialPageRoute(
+    //     //     builder: (context) => const HomeScreen(),
+    //     //   ),
+    //     // );
+    //     Navigator.of(context).pushReplacement(
+    //       MaterialPageRoute(
+    //         builder: (context) => const MainScreen(),
+    //       ),
+    //     );
+    //   }
+    // });
+    supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
       if (event == AuthChangeEvent.signedIn) {
-        // Navigator.of(context).pushReplacement(
-        //   MaterialPageRoute(
-        //     builder: (context) => const HomeScreen(),
-        //   ),
-        // );
+        // ✅ SIMPAN STATUS LOGIN
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
+
+        // ➡️ Pindah ke MainScreen
         Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => const MainScreen(),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/widgets/custom_button.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:nemo_mobile/screens/splash/splash_screen.dart';
+
 
 class FiturScreen extends StatefulWidget {
   const FiturScreen({super.key});
@@ -7,7 +10,6 @@ class FiturScreen extends StatefulWidget {
   @override
   State<FiturScreen> createState() => _FiturScreenState();
 }
-
 class _FiturScreenState extends State<FiturScreen> {
   final PageController _pageController = PageController();
   int _currentIndex = 0;
@@ -128,21 +130,24 @@ class _FiturScreenState extends State<FiturScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(bottom: 32, left: 24, right: 24),
                 child: _currentIndex == fiturList.length - 1
-                    ? CustomButton(
-                        text: "Yuk Mulai",
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/login');
-                        },
-                      )
-                    : CustomButton(
-                        text: "Lanjut",
-                        onPressed: () {
-                          _pageController.nextPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeIn,
-                          );
-                        },
-                      ),
+                        ? CustomButton(
+                            text: "Yuk Mulai",
+                            onPressed: () async {
+                              final prefs = await SharedPreferences.getInstance();
+                              await prefs.setBool('hasSeenOnboarding', true);
+
+                              Navigator.pushReplacementNamed(context, '/login');
+                            },
+                          )
+                        : CustomButton(
+                            text: "Lanjut",
+                            onPressed: () {
+                              _pageController.nextPage(
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeIn,
+                              );
+                            },
+                          ),
               ),
             ),
 

@@ -1,45 +1,52 @@
-// // splash_screen.dart
-// import 'package:flutter/material.dart';
-// import 'package:supabase_flutter/supabase_flutter.dart';
-// import '../home/main_screen.dart';
-// import '../onboarding/onboarding_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:nemo_mobile/screens/onboarding/onboarding_screen.dart';
+import 'package:nemo_mobile/screens/home/main_screen.dart';
+import 'package:nemo_mobile/screens/auth/pilihan_login_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-// class SplashScreen extends StatefulWidget {
-//   const SplashScreen({super.key});
+class SplashScreen extends StatefulWidget {
+  final bool hasSeenOnboarding;
 
-//   @override
-//   State<SplashScreen> createState() => _SplashScreenState();
-// }
+  const SplashScreen({super.key, required this.hasSeenOnboarding}); // ✅ tambahkan parameter ini
 
-// class _SplashScreenState extends State<SplashScreen> {
-//   @override
-//   void initState() {
-//     super.initState();
-//     _checkLogin();
-//   }
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
 
-//   Future<void> _checkLogin() async {
-//     await Future.delayed(const Duration(seconds: 2)); // Splash delay
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkRoute();
+  }
 
-//     final session = Supabase.instance.client.auth.currentSession;
+  Future<void> _checkRoute() async {
+    await Future.delayed(const Duration(seconds: 2)); // efek loading
 
-//     if (session != null) {
-//       // Sudah login
-//       Navigator.of(context).pushReplacement(
-//         MaterialPageRoute(builder: (_) => const MainScreen()),
-//       );
-//     } else {
-//       // Belum login → ke onboarding
-//       Navigator.of(context).pushReplacement(
-//         MaterialPageRoute(builder: (_) => const FiturScreen()),
-//       );
-//     }
-//   }
+    final user = Supabase.instance.client.auth.currentUser;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return const Scaffold(
-//       body: Center(child: Text('Splash...')),
-//     );
-//   }
-// }
+    if (!widget.hasSeenOnboarding) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const FiturScreen()),
+      );
+    } else if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const PilihanLoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(child: CircularProgressIndicator()),
+    );
+  }
+}
