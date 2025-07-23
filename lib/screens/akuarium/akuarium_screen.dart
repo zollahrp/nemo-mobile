@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/akuarium/Set_Ecosystem_Screen.dart';
+import 'package:nemo_mobile/screens/akuarium/detail_akuarium_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nemo_mobile/models/akuarium_model.dart';
 
@@ -169,81 +170,90 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
       itemBuilder: (context, index) {
         final akuarium = akuariumList[index];
 
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => DetailAkuariumScreen(akuarium: akuarium),
               ),
-            ],
-          ),
-          child: Column(
-            children: [
-              Row(
-                children: [
-                  CircleAvatar(
-                    radius: 25,
-                    backgroundImage: akuarium.fotoUrl != null
-                        ? NetworkImage(akuarium.fotoUrl!)
-                        : const AssetImage('lib/assets/images/fitur1.png') as ImageProvider,
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          akuarium.nama,
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                        ),
-                        const SizedBox(height: 2),
-
-                        // Ganti bagian ini dengan logika baru:
-                        if ((akuarium.jadwalPakan?.isEmpty ?? true) &&
-                            (akuarium.jadwalMaintenance?.isEmpty ?? true))
-                          const Text(
-                            'Tidak ada pengingat yang diatur',
-                            style: TextStyle(fontSize: 13, color: Colors.grey),
-                          )
-                        else ...[
-                          if ((akuarium.jadwalPakan?.isNotEmpty ?? false))
-                            Text(
-                              'Pakan: ${akuarium.jadwalPakan}',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                          if ((akuarium.jadwalMaintenance?.isNotEmpty ?? false))
-                            Text(
-                              'Maintenance: ${akuarium.jadwalMaintenance}',
-                              style: const TextStyle(fontSize: 13, color: Colors.grey),
-                            ),
-                        ],
-                      ],
+            );
+          },
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 6,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: Column(
+              children: [
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 25,
+                      backgroundImage: akuarium.fotoUrl != null
+                          ? NetworkImage(akuarium.fotoUrl!)
+                          : const AssetImage('lib/assets/images/fitur1.png') as ImageProvider,
                     ),
-                  ),
-                  const Icon(Icons.more_vert, size: 20),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Divider(height: 1, color: Color(0xFFE5E7EB)),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  _iconCircle(Icons.thermostat),
-                  const SizedBox(width: 12),
-                  _iconCircle(Icons.build),
-                  const SizedBox(width: 12),
-                  _iconCircle(Icons.restaurant),
-                  const Spacer(),
-                  const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
-                ],
-              ),
-            ],
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            akuarium.nama,
+                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                          ),
+                          const SizedBox(height: 2),
+
+                          if ((akuarium.jadwalPakan?.isEmpty ?? true) &&
+                              (akuarium.jadwalMaintenance?.isEmpty ?? true))
+                            const Text(
+                              'Tidak ada pengingat yang diatur',
+                              style: TextStyle(fontSize: 13, color: Colors.grey),
+                            )
+                          else ...[
+                            if ((akuarium.jadwalPakan?.isNotEmpty ?? false))
+                              Text(
+                                'Pakan: ${akuarium.jadwalPakan}',
+                                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              ),
+                            if ((akuarium.jadwalMaintenance?.isNotEmpty ?? false))
+                              Text(
+                                'Maintenance: ${akuarium.jadwalMaintenance}',
+                                style: const TextStyle(fontSize: 13, color: Colors.grey),
+                              ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.more_vert, size: 20),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    _iconCircle(Icons.thermostat),
+                    const SizedBox(width: 12),
+                    _iconCircle(Icons.build),
+                    const SizedBox(width: 12),
+                    _iconCircle(Icons.restaurant),
+                    const Spacer(),
+                    const Icon(Icons.arrow_forward_ios_rounded, size: 18, color: Colors.grey),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },
