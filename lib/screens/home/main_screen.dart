@@ -6,6 +6,7 @@ import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
 import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
+import 'package:nemo_mobile/screens/settings/akun_screen.dart';
 
 
 class MainScreen extends StatefulWidget {
@@ -25,9 +26,10 @@ class _MainScreenState extends State<MainScreen> {
     const HomeScreen(),
     const AkuariumScreen(),
     // const SetEcosystemScreen(),
-    const ListIkanScreen(),
     const ScannerScreen(),
+    const ListIkanScreen(),
     const FishBotScreen(),
+    const AkunScreen(),
   ];
 
   @override
@@ -71,19 +73,23 @@ class _MainScreenState extends State<MainScreen> {
               ),
               Padding(
                 padding: EdgeInsets.only(top: 0),
-                child: Icon(Icons.water_rounded, size: 30, color: Color(0xFF0E91E9)),          
-              ),
-                Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Icon(Icons.book_rounded, size: 30, color: Color(0xFF0E91E9)), // Ensiklopedia
+                child: Icon(Icons.eco_rounded, size: 30, color: Color(0xFF0E91E9)),      
               ),
               Padding(
                 padding: EdgeInsets.only(top: 5),
                 child: Icon(Icons.qr_code_scanner, size: 30, color: Color(0xFF0E91E9),),
               ),
+                Padding(
+                  padding: EdgeInsets.only(top: 5),
+                  child: Icon(Icons.menu_book_rounded, size: 30, color: Color(0xFF0E91E9)),
+              ),
               Padding(
                 padding: EdgeInsets.only(top: 5),
                 child: Icon(Icons.auto_awesome, size: 30, color: Color(0xFF0E91E9),),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 5),
+                child: Icon(Icons.person_rounded, size: 30, color: Color(0xFF0E91E9)),
               ),
             ],
             onTap: (index) {

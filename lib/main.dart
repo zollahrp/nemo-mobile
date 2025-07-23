@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 // Screens
 import 'screens/home/main_screen.dart';
@@ -14,16 +15,13 @@ import 'screens/settings/akun_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/splash/splash_screen.dart';
 
-import 'dart:async';
-import 'package:fluttertoast/fluttertoast.dart';
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables
   await dotenv.load(fileName: ".env");
 
-  // Initialize Supabase
+  // Init Supabase
   await Supabase.initialize(
     url: dotenv.env['SUPABASE_URL']!,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
@@ -34,13 +32,19 @@ Future<void> main() async {
     storageOptions: const StorageClientOptions(retryAttempts: 10),
   );
 
-  runApp(const MyApp());
+  // Load onboarding flag
+  final prefs = await SharedPreferences.getInstance();
+  final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+  runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding));
 }
 
 final supabase = Supabase.instance.client;
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool hasSeenOnboarding;
+
+  const MyApp({super.key, required this.hasSeenOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -52,10 +56,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      // home: const FiturScreen(),
-      home: const MainScreen(),
+      home: hasSeenOnboarding ? const MainScreen() : const FiturScreen(),
       routes: {
-        // '/fitur': (context) => const FiturScreen(),
         '/login': (context) => const PilihanLoginScreen(),
         '/masuk': (context) => const LoginScreen(),
         '/daftar': (context) => const DaftarScreen(),
@@ -71,5 +73,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
-// Tes perubahan
