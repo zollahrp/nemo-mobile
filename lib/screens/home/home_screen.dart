@@ -5,6 +5,7 @@ import 'package:nemo_mobile/data/dummy_artikel.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/detail_ikan_screen.dart';
 import 'package:nemo_mobile/models/IkanModel.dart';
+import 'package:nemo_mobile/screens/home/full_search_ikan_screen.dart';
 import 'dart:ui'; 
 
 final user = Supabase.instance.client.auth.currentUser;
@@ -243,7 +244,6 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 
-  // ✅ Dipindah ke luar build()
   Widget _buildHorizontalBanner() {
     final List<Map<String, dynamic>> bannerData = [
       {
@@ -425,7 +425,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Search mini
             Expanded(
-              flex: 2,
+            flex: 2,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => FullSearchIkanScreen(),
+                  ),
+                );
+              },
               child: Container(
                 height: 38,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -452,6 +461,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
+          ),
+
             const SizedBox(width: 8),
 
             // Notifikasi
