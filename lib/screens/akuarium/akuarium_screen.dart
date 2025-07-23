@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/screens/akuarium/Set_Ecosystem_Screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:nemo_mobile/models/akuarium_model.dart';
 
 
 class AkuariumScreen extends StatefulWidget {
@@ -17,7 +19,31 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    fetchAkuarium();
   }
+
+  Future<void> fetchAkuarium() async {
+    try {
+      final user = Supabase.instance.client.auth.currentUser;
+      final res = await Supabase.instance.client
+          .from('akuarium')
+          .select()
+          .eq('profiles_id', user!.id)
+          .order('created_at');
+
+      akuariumList = (res as List).map((e) => AkuariumModel.fromMap(e)).toList();
+    } catch (e) {
+      error = 'Gagal mengambil data akuarium';
+    } finally {
+      setState(() => isLoading = false);
+    }
+  }
+
+  
+  List<AkuariumModel> akuariumList = [];
+  bool isLoading = true;
+  String? error;
+
 
   @override
   Widget build(BuildContext context) {
@@ -86,9 +112,11 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  "Total: 1 Akuarium",
-                  style: TextStyle(fontSize: 14, color: Colors.black54),
+                 Text(
+                  akuariumList.isEmpty
+                      ? "Belum ada akuarium"
+                      : "Total: ${akuariumList.length} Akuarium",
+                  style: const TextStyle(fontSize: 14, color: Colors.black54),
                 ),
                 const SizedBox(height: 20),
                 Container(
@@ -122,12 +150,27 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
     );
   }
 
-  // 🔹 Dummy Content Akuarium
   Widget _buildAkuariumTab() {
-    return ListView(
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (error != null) {
+      return Center(child: Text(error!));
+    }
+
+    if (akuariumList.isEmpty) {
+      return const Center(child: Text("Belum ada akuarium"));
+    }
+
+    return ListView.builder(
       padding: const EdgeInsets.all(16),
-      children: [
-        Container(
+      itemCount: akuariumList.length,
+      itemBuilder: (context, index) {
+        final akuarium = akuariumList[index];
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
@@ -144,23 +187,42 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
             children: [
               Row(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.asset(
-                      'lib/assets/images/fitur1.png',
-                      width: 50,
-                      height: 50,
-                      fit: BoxFit.cover,
-                    ),
+                  CircleAvatar(
+                    radius: 25,
+                    backgroundImage: akuarium.fotoUrl != null
+                        ? NetworkImage(akuarium.fotoUrl!)
+                        : const AssetImage('lib/assets/images/fitur1.png') as ImageProvider,
                   ),
                   const SizedBox(width: 12),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Aquariumku', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                        SizedBox(height: 2),
-                        Text('Tidak ada pengingat yang diatur', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                        Text(
+                          akuarium.nama,
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        const SizedBox(height: 2),
+
+                        // Ganti bagian ini dengan logika baru:
+                        if ((akuarium.jadwalPakan?.isEmpty ?? true) &&
+                            (akuarium.jadwalMaintenance?.isEmpty ?? true))
+                          const Text(
+                            'Tidak ada pengingat yang diatur',
+                            style: TextStyle(fontSize: 13, color: Colors.grey),
+                          )
+                        else ...[
+                          if ((akuarium.jadwalPakan?.isNotEmpty ?? false))
+                            Text(
+                              'Pakan: ${akuarium.jadwalPakan}',
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                          if ((akuarium.jadwalMaintenance?.isNotEmpty ?? false))
+                            Text(
+                              'Maintenance: ${akuarium.jadwalMaintenance}',
+                              style: const TextStyle(fontSize: 13, color: Colors.grey),
+                            ),
+                        ],
                       ],
                     ),
                   ),
@@ -183,8 +245,8 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 

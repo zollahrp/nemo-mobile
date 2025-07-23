@@ -217,21 +217,51 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
         }
       }
 
-      await Supabase.instance.client.from('ecosystems').insert({
+      final temperature = (recommendedTempMin + recommendedTempMax) / 2;
+      final ph = (recommendedPhMin + recommendedPhMax) / 2;
+
+      final response = await Supabase.instance.client.from('akuarium').insert({
         'profiles_id': userId,
-        'temperature': (recommendedTempMin + recommendedTempMax) / 2, // Use average
-        'ph': (recommendedPhMin + recommendedPhMax) / 2, // Use average
-        'tank_size': tankSize,
-        'ikan': ikanNames,
+        'nama': 'Akuarium Baru',
+        'temperature': temperature,
+        'ph': ph,
+        'tank_size_l': tankSize,
+        'jadwal_pakan': '',
+        'jadwal_maintenance': '',
         'is_favorite': false,
-      });
+        'is_set_mode': true,
+      }).select();
+
+      if (response == null || response.isEmpty) {
+        throw Exception('❌ Insert gagal. Tidak ada data dikembalikan.');
+      }
+
+      final akuariumId = response.first['id'];
+
+      for (var item in selectedFishes) {
+        final namaIkan = (item['nama'] as String?)?.split(' (').first ?? '';
+        final jumlah = item['jumlah'] ?? 1;
+        final ikan = fishData.firstWhereOrNull((f) => f['nama'] == namaIkan);
+        final ikanId = ikan?['id'];
+
+        if (ikanId != null) {
+          await Supabase.instance.client.from('akuarium_ikan').insert({
+            'akuarium_id': akuariumId,
+            'ikan_id': ikanId,
+            'jumlah': jumlah,
+          });
+        }
+      }
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Ekosistem berhasil disimpan')),
+        const SnackBar(content: Text('✅ Akuarium berhasil disimpan')),
       );
 
-      // Reset form after successful save
       resetForm();
+
+      Future.delayed(const Duration(milliseconds: 500), () {
+        Navigator.pop(context);
+      });
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('❌ Gagal menyimpan: $e')),
