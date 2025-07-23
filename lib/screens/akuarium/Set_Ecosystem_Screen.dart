@@ -13,11 +13,13 @@ class SetEcosystemScreen extends StatefulWidget {
 class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
   List<Map<String, dynamic>> selectedFishes = []; 
   String? selectedFish;
-  double selectedTemp = 26.0;
-  double selectedPh = 7.0;
+  double recommendedTempMin = 26.0;
+  double recommendedTempMax = 26.0;
+  double recommendedPhMin = 7.0;
+  double recommendedPhMax = 7.0;
   int tankSize = 50;
   String resultMessage = '';
-  int fishCount = 1;
+  bool isCompatible = false;
 
   List<Map<String, dynamic>> fishData = [];
   List<String> fishList = [];
@@ -43,6 +45,51 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
     }
   }
 
+  void calculateRecommendedParameters() {
+    if (selectedFishes.isEmpty) {
+      setState(() {
+        recommendedTempMin = 26.0;
+        recommendedTempMax = 26.0;
+        recommendedPhMin = 7.0;
+        recommendedPhMax = 7.0;
+      });
+      return;
+    }
+
+    double tempMinOverall = double.negativeInfinity;
+    double tempMaxOverall = double.infinity;
+    double phMinOverall = double.negativeInfinity;
+    double phMaxOverall = double.infinity;
+
+    for (var item in selectedFishes) {
+      final namaIkan = (item['nama'] as String?)?.split(' (').first ?? '';
+      final fish = fishData.firstWhereOrNull((f) => f['nama'] == namaIkan);
+      
+      if (fish != null) {
+        final tempMin = double.tryParse(fish['temp_min'].toString()) ?? 0;
+        final tempMax = double.tryParse(fish['temp_max'].toString()) ?? 100;
+        final phMin = double.tryParse(fish['ph_min'].toString()) ?? 0;
+        final phMax = double.tryParse(fish['ph_max'].toString()) ?? 14;
+
+        tempMinOverall = tempMinOverall == double.negativeInfinity ? tempMin : 
+                        tempMin > tempMinOverall ? tempMin : tempMinOverall;
+        tempMaxOverall = tempMaxOverall == double.infinity ? tempMax : 
+                        tempMax < tempMaxOverall ? tempMax : tempMaxOverall;
+        phMinOverall = phMinOverall == double.negativeInfinity ? phMin : 
+                      phMin > phMinOverall ? phMin : phMinOverall;
+        phMaxOverall = phMaxOverall == double.infinity ? phMax : 
+                      phMax < phMaxOverall ? phMax : phMaxOverall;
+      }
+    }
+
+    setState(() {
+      recommendedTempMin = tempMinOverall == double.negativeInfinity ? 26.0 : tempMinOverall;
+      recommendedTempMax = tempMaxOverall == double.infinity ? 26.0 : tempMaxOverall;
+      recommendedPhMin = phMinOverall == double.negativeInfinity ? 7.0 : phMinOverall;
+      recommendedPhMax = phMaxOverall == double.infinity ? 7.0 : phMaxOverall;
+    });
+  }
+
   void calculateTotalTankSize() {
     double totalSize = 0;
 
@@ -58,56 +105,91 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
             5.0;
         totalSize += length * (item['jumlah'] ?? 1) * 2;
       } else {
-        // fallback kalau ikan gak ketemu
-        totalSize += 10.0 * (item['jumlah'] ?? 1); // misal pakai default 10L
+        totalSize += 10.0 * (item['jumlah'] ?? 1);
       }
     }
 
     setState(() => tankSize = totalSize.round());
   }
 
-
   void checkCompatibility() {
     List<String> incompatibleFishes = [];
+    bool tempCompatible = true;
+    bool phCompatible = true;
 
-    for (var item in selectedFishes) {
-      final namaIkan = (item['nama'] as String?)?.split(' (').first ?? '';
-      final fish = fishData.firstWhereOrNull((f) => f['nama'] == namaIkan);
-      if (fish == null) {
-        incompatibleFishes.add('❌ ${item['nama'] ?? 'Unknown'} (data tidak ditemukan)');
-        continue;
-      }
+    // Check temperature and pH compatibility
+    for (int i = 0; i < selectedFishes.length; i++) {
+      for (int j = i + 1; j < selectedFishes.length; j++) {
+        final namaIkan1 = (selectedFishes[i]['nama'] as String?)?.split(' (').first ?? '';
+        final namaIkan2 = (selectedFishes[j]['nama'] as String?)?.split(' (').first ?? '';
+        
+        final fish1 = fishData.firstWhereOrNull((f) => f['nama'] == namaIkan1);
+        final fish2 = fishData.firstWhereOrNull((f) => f['nama'] == namaIkan2);
 
-      final tempMin = double.tryParse(fish['temp_min'].toString()) ?? 0;
-      final tempMax = double.tryParse(fish['temp_max'].toString()) ?? 100;
-      final phMin = double.tryParse(fish['ph_min'].toString()) ?? 0;
-      final phMax = double.tryParse(fish['ph_max'].toString()) ?? 14;
+        if (fish1 != null && fish2 != null) {
+          final temp1Min = double.tryParse(fish1['temp_min'].toString()) ?? 0;
+          final temp1Max = double.tryParse(fish1['temp_max'].toString()) ?? 100;
+          final temp2Min = double.tryParse(fish2['temp_min'].toString()) ?? 0;
+          final temp2Max = double.tryParse(fish2['temp_max'].toString()) ?? 100;
 
-      if (selectedTemp < tempMin || selectedTemp > tempMax || selectedPh < phMin || selectedPh > phMax) {
-        incompatibleFishes.add(
-          '⚠️ ${fish['nama']} butuh suhu $tempMin–$tempMax°C dan pH $phMin–$phMax',
-        );
+          final ph1Min = double.tryParse(fish1['ph_min'].toString()) ?? 0;
+          final ph1Max = double.tryParse(fish1['ph_max'].toString()) ?? 14;
+          final ph2Min = double.tryParse(fish2['ph_min'].toString()) ?? 0;
+          final ph2Max = double.tryParse(fish2['ph_max'].toString()) ?? 14;
+
+          // Check temperature overlap
+          if (temp1Max < temp2Min || temp2Max < temp1Min) {
+            tempCompatible = false;
+            incompatibleFishes.add(
+              '🌡️ ${fish1['nama']} (${temp1Min}-${temp1Max}°C) tidak kompatibel dengan ${fish2['nama']} (${temp2Min}-${temp2Max}°C)'
+            );
+          }
+
+          // Check pH overlap
+          if (ph1Max < ph2Min || ph2Max < ph1Min) {
+            phCompatible = false;
+            incompatibleFishes.add(
+              '⚗️ ${fish1['nama']} (pH ${ph1Min}-${ph1Max}) tidak kompatibel dengan ${fish2['nama']} (pH ${ph2Min}-${ph2Max})'
+            );
+          }
+        }
       }
     }
 
+    // Check if recommended range is valid
+    if (recommendedTempMin > recommendedTempMax) {
+      tempCompatible = false;
+      incompatibleFishes.add('❌ Tidak ada rentang suhu yang cocok untuk semua ikan');
+    }
+
+    if (recommendedPhMin > recommendedPhMax) {
+      phCompatible = false;
+      incompatibleFishes.add('❌ Tidak ada rentang pH yang cocok untuk semua ikan');
+    }
+
     setState(() {
-      resultMessage = incompatibleFishes.isEmpty
-          ? '✅ Semua ikan cocok dengan parameter yang dipilih.'
+      isCompatible = incompatibleFishes.isEmpty && tempCompatible && phCompatible;
+      resultMessage = isCompatible
+          ? '✅ Semua ikan kompatibel!\n🌡️ Suhu: ${recommendedTempMin.toStringAsFixed(1)}-${recommendedTempMax.toStringAsFixed(1)}°C\n⚗️ pH: ${recommendedPhMin.toStringAsFixed(1)}-${recommendedPhMax.toStringAsFixed(1)}'
           : incompatibleFishes.join('\n');
     });
   }
 
   void resetForm() {
     setState(() {
+      selectedFishes.clear();
       selectedFish = null;
-      selectedTemp = 26.0;
-      selectedPh = 7.0;
+      recommendedTempMin = 26.0;
+      recommendedTempMax = 26.0;
+      recommendedPhMin = 7.0;
+      recommendedPhMax = 7.0;
       tankSize = 50;
       resultMessage = '';
+      isCompatible = false;
     });
   }
 
-    Future<void> saveEcosystem() async {
+  Future<void> saveEcosystem() async {
     try {
       final userId = Supabase.instance.client.auth.currentUser?.id;
 
@@ -118,34 +200,38 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
         return;
       }
 
-      // ✅ Validasi kategori sebelum simpan
-      if (!selectedFishes.every((item) {
-        final kategori = fishData.firstWhereOrNull((f) => f['nama'] == item['nama'])?['kategori'];
-        return isCompatibleWithAll(kategori ?? '');
-      })) {
+      if (!isCompatible) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('❌ Ada ikan yang tidak cocok dalam akuarium')),
+          const SnackBar(content: Text('❌ Silakan cek kompatibilitas terlebih dahulu')),
         );
         return;
       }
 
+      // Prepare fish names array
+      List<String> ikanNames = [];
       for (var item in selectedFishes) {
-        final fish = fishData.firstWhereOrNull((f) => f['nama'] == item['nama']);
-        if (fish == null) continue;
-
-        await Supabase.instance.client.from('ecosystems').insert({
-          'profiles_id': userId,
-          'ikan_id': fish['id'],
-          'jumlah': item['jumlah'],
-          'temperature': selectedTemp,
-          'ph': selectedPh,
-          'tank_size_l': tankSize,
-        });
+        final namaIkan = (item['nama'] as String?)?.split(' (').first ?? '';
+        final jumlah = item['jumlah'] ?? 1;
+        for (int i = 0; i < jumlah; i++) {
+          ikanNames.add(namaIkan);
+        }
       }
+
+      await Supabase.instance.client.from('ecosystems').insert({
+        'profiles_id': userId,
+        'temperature': (recommendedTempMin + recommendedTempMax) / 2, // Use average
+        'ph': (recommendedPhMin + recommendedPhMax) / 2, // Use average
+        'tank_size': tankSize,
+        'ikan': ikanNames,
+        'is_favorite': false,
+      });
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Ekosistem berhasil disimpan')),
       );
+
+      // Reset form after successful save
+      resetForm();
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('❌ Gagal menyimpan: $e')),
@@ -160,23 +246,18 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
     final predator = 'Ikan Predator';
     final invertebrata = 'Invertabrata';
 
-    // Tidak bisa gabung jika habitat air beda (contoh: air tawar vs laut)
     if (kelompokAir.contains(kategori1) && kelompokAir.contains(kategori2)) {
-      // Tapi kalau beda jenis air (misal Tawar vs Laut), tetap gak boleh
       return kategori1 == kategori2;
     }
 
-    // Predator tidak boleh digabung dengan apa pun selain sesama predator
     if (kategori1 == predator || kategori2 == predator) {
       return kategori1 == kategori2;
     }
 
-    // Invertabrata tidak bisa dicampur dengan predator
     if ((kategori1 == invertebrata && kategori2 == predator) ||
         (kategori2 == invertebrata && kategori1 == predator)) {
       return false;
     }
-    print("cek: $kategori1 vs $kategori2 => ${kategori1 == kategori2}");
 
     return true;
   }
@@ -186,14 +267,13 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
       final ikan = fishData.firstWhereOrNull((f) => f['nama'] == item['nama']);
       if (ikan == null) continue;
 
-      final kategoriLama = ikan['kategori']; // pastikan field ini ada di tabel ikan
+      final kategoriLama = ikan['kategori'];
       if (kategoriLama != null && !areIkanCompatible(kategoriBaru, kategoriLama)) {
         return false;
       }
     }
     return true;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +306,7 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                                 final kategori = ikan?['kategori'] ?? '';
                                 return "$namaIkan ($kategori)";
                               }).toList(),
-                              selectedItem: item['nama'],
+                              selectedItem: item['nama'] != null ? "${item['nama']} (${fishData.firstWhereOrNull((f) => f['nama'] == item['nama'])?['kategori'] ?? ''})" : null,
                               dropdownDecoratorProps: const DropDownDecoratorProps(
                                 dropdownSearchDecoration: InputDecoration(
                                   labelText: "Pilih Ikan",
@@ -266,6 +346,9 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                                   item['nama'] = namaBaru;
                                   selectedFish = namaBaru;
                                   calculateTotalTankSize();
+                                  calculateRecommendedParameters();
+                                  isCompatible = false; // Reset compatibility status
+                                  resultMessage = ''; // Clear previous results
                                 });
                               },
                             ),
@@ -283,6 +366,8 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                                   setState(() {
                                     item['jumlah'] = parsed;
                                     calculateTotalTankSize();
+                                    isCompatible = false; // Reset compatibility status
+                                    resultMessage = ''; // Clear previous results
                                   });
                                 }
                               },
@@ -296,6 +381,9 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                                   setState(() {
                                     selectedFishes.remove(item);
                                     calculateTotalTankSize();
+                                    calculateRecommendedParameters();
+                                    isCompatible = false; // Reset compatibility status
+                                    resultMessage = ''; // Clear previous results
                                   });
                                 },
                               ),
@@ -323,36 +411,27 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                   ),
 
                   const SizedBox(height: 24),
-                  Text('Suhu (°C): ${selectedTemp.toStringAsFixed(1)}'),
-                  Slider(
-                    value: selectedTemp,
-                    min: 10,
-                    max: 40,
-                    divisions: 60,
-                    label: selectedTemp.toStringAsFixed(1),
-                    onChanged: (value) {
-                      setState(() => selectedTemp = value);
-                    },
-                  ),
-
-                  const SizedBox(height: 8),
-                  Text('pH: ${selectedPh.toStringAsFixed(1)}'),
-                  Slider(
-                    value: selectedPh,
-                    min: 4,
-                    max: 9,
-                    divisions: 50,
-                    label: selectedPh.toStringAsFixed(1),
-                    onChanged: (value) {
-                      setState(() => selectedPh = value);
-                    },
+                  Card(
+                    color: Colors.blue[50],
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text('Parameter Rekomendasi:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 8),
+                          Text('🌡️ Suhu: ${recommendedTempMin.toStringAsFixed(1)}-${recommendedTempMax.toStringAsFixed(1)}°C'),
+                          Text('⚗️ pH: ${recommendedPhMin.toStringAsFixed(1)}-${recommendedPhMax.toStringAsFixed(1)}'),
+                        ],
+                      ),
+                    ),
                   ),
 
                   const SizedBox(height: 12),
                   Row(
                     children: [
                       ElevatedButton.icon(
-                        onPressed: checkCompatibility,
+                        onPressed: selectedFishes.isNotEmpty ? checkCompatibility : null,
                         icon: const Icon(Icons.search),
                         label: const Text('Cek Kesesuaian'),
                       ),
@@ -367,13 +446,13 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                   const SizedBox(height: 16),
                   if (resultMessage.isNotEmpty)
                     Card(
-                      color: resultMessage.contains('✅') ? Colors.green[50] : Colors.amber[50],
+                      color: isCompatible ? Colors.green[50] : Colors.red[50],
                       child: Padding(
                         padding: const EdgeInsets.all(12),
                         child: Text(
                           resultMessage,
                           style: TextStyle(
-                            color: resultMessage.contains('✅') ? Colors.green : Colors.redAccent,
+                            color: isCompatible ? Colors.green[700] : Colors.red[700],
                           ),
                         ),
                       ),
@@ -393,7 +472,7 @@ class _SetEcosystemScreenState extends State<SetEcosystemScreen> {
                   ),
 
                   const SizedBox(height: 24),
-                  if (resultMessage.contains('✅'))
+                  if (isCompatible)
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
