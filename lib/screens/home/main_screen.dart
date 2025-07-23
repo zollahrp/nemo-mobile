@@ -29,7 +29,7 @@ class _MainScreenState extends State<MainScreen> {
     const ScannerScreen(),
     const ListIkanScreen(),
     const FishBotScreen(),
-    const AkunScreen(),
+    // const AkunScreen(),
   ];
 
   @override
@@ -87,10 +87,10 @@ class _MainScreenState extends State<MainScreen> {
                 padding: EdgeInsets.only(top: 5),
                 child: Icon(Icons.auto_awesome, size: 30, color: Color(0xFF0E91E9),),
               ),
-              Padding(
-                padding: EdgeInsets.only(top: 5),
-                child: Icon(Icons.person_rounded, size: 30, color: Color(0xFF0E91E9)),
-              ),
+              // Padding(
+              //   padding: EdgeInsets.only(top: 5),
+              //   child: Icon(Icons.person_rounded, size: 30, color: Color(0xFF0E91E9)),
+              // ),
             ],
             onTap: (index) {
               setState(() {
