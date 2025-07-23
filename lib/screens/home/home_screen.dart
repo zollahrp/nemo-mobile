@@ -482,10 +482,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
 Widget buildTopFiturSection() {
   final fiturList = [
-    {'label': 'Graphic Design', 'icon': Icons.draw, 'color': Color(0xFFC1F4D3), 'iconColor': Color(0xFF00C853)},
-    {'label': '3D Design', 'icon': Icons.view_in_ar, 'color': Color(0xFFC7E5FF), 'iconColor': Color(0xFF2979FF)},
-    {'label': 'Art Design', 'icon': Icons.color_lens, 'color': Color(0xFFFFF1D2), 'iconColor': Color(0xFFFF6D00)},
-    {'label': 'Healthy Cate', 'icon': Icons.self_improvement, 'color': Color(0xFFE3DAFF), 'iconColor': Color(0xFF6200EA)},
+    {
+      'label': 'Scan Penyakit dan Identifikasi',
+      'icon': Icons.search,
+      'color': Color(0xFFC7E5FF),
+      'iconColor': Color(0xFF2979FF),
+    },
+    {
+      'label': 'Set Ekosistem Akuarium',
+      'icon': Icons.auto_awesome,
+      'color': Color(0xFFE3DAFF),
+      'iconColor': Color(0xFF6200EA),
+    },
+    {
+      'label': 'FishBot (Asisten Konsultasi)',
+      'icon': Icons.chat_bubble_outline,
+      'color': Color(0xFFFFF1D2),
+      'iconColor': Color(0xFFFF6D00),
+    },
+    {
+      'label': 'Rekomendasi Obat & Produk',
+      'icon': Icons.local_pharmacy,
+      'color': Color(0xFFFFD7D7),
+      'iconColor': Color(0xFFD50000),
+    },
+    {
+      'label': 'Ensiklopedia Ikan Hias',
+      'icon': Icons.book,
+      'color': Color(0xFFFFF9C4),
+      'iconColor': Color(0xFFFBC02D),
+    },
+    {
+      'label': 'Riwayat Akuarium',
+      'icon': Icons.history,
+      'color': Color(0xFFD7CCC8),
+      'iconColor': Color(0xFF5D4037),
+    },
+    {
+      'label': 'Checklist Harian',
+      'icon': Icons.check_circle_outline,
+      'color': Color(0xFFC1F4D3),
+      'iconColor': Color(0xFF00C853),
+    },
   ];
 
   return Column(

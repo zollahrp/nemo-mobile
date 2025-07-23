@@ -23,8 +23,8 @@ class _MainScreenState extends State<MainScreen> {
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    // const AkuariumScreen(),
-    const SetEcosystemScreen(),
+    const AkuariumScreen(),
+    // const SetEcosystemScreen(),
     const ListIkanScreen(),
     const ScannerScreen(),
     const FishBotScreen(),
