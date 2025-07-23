@@ -11,6 +11,10 @@ class IkanModel {
   final String umur;
   final String asal;
   final String kategori;
+  final double? tempMin;
+  final double? tempMax;
+  final double? phMin;
+  final double? phMax;
 
   IkanModel({
     required this.nama,
@@ -25,6 +29,10 @@ class IkanModel {
     required this.umur,
     required this.asal,
     required this.kategori,
+    this.tempMin,
+    this.tempMax,
+    this.phMin,
+    this.phMax,
   });
 
   factory IkanModel.fromMap(Map<String, dynamic> map) {
@@ -41,6 +49,10 @@ class IkanModel {
       umur: map['umur'],
       asal: map['asal'],
       kategori: map['kategori'],
+      tempMin: map['temp_min']?.toDouble(),
+      tempMax: map['temp_max']?.toDouble(),
+      phMin: map['ph_min']?.toDouble(),
+      phMax: map['ph_max']?.toDouble(),
     );
   }
 }
