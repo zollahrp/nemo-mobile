@@ -16,6 +16,7 @@ class DetailAkuariumScreen extends StatelessWidget {
 
     return response;
   }
+  
 
   Future<String?> getSuhuRange() async {
     final supabase = Supabase.instance.client;
@@ -29,7 +30,7 @@ class DetailAkuariumScreen extends StatelessWidget {
 
     final temps = result.map((e) => e['ikan']).toList();
 
-    final minTemp = temps.map((e) => (e['temp_min'] as num).toDouble()).reduce((a, b) => a < b ? a : b);
+    final minTemp = temps.map((e) => (e['temp_min'] as num).toDouble()).reduce((a, b) => a < b ? a : b) ;
     final maxTemp = temps.map((e) => (e['temp_max'] as num).toDouble()).reduce((a, b) => a > b ? a : b);
 
     return "${minTemp.toStringAsFixed(1)}°C - ${maxTemp.toStringAsFixed(1)}°C";
@@ -53,6 +54,81 @@ class DetailAkuariumScreen extends StatelessWidget {
     return total;
   }
 
+    void _showTambahIkanDialog(BuildContext context) async {
+    final supabase = Supabase.instance.client;
+    final katalog = await supabase.from('ikan').select('id, nama, gambar_url');
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return ListView.builder(
+          padding: const EdgeInsets.all(16),
+          itemCount: katalog.length,
+          itemBuilder: (context, index) {
+            final ikan = katalog[index];
+
+            return ListTile(
+              leading: CircleAvatar(
+                backgroundImage: NetworkImage(ikan['gambar_url'] ?? ''),
+                backgroundColor: Colors.blue.shade50,
+              ),
+              title: Text(ikan['nama']),
+              onTap: () {
+                Navigator.pop(context);
+                _konfirmasiTambah(context, ikan['id'], ikan['nama']);
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _konfirmasiTambah(BuildContext context, String ikanId, String namaIkan) async {
+    final jumlahController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text("Tambah $namaIkan"),
+          content: TextField(
+            controller: jumlahController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(labelText: "Jumlah"),
+          ),
+          actions: [
+            TextButton(
+              child: const Text("Batal"),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              child: const Text("Simpan"),
+              onPressed: () async {
+                final supabase = Supabase.instance.client;
+                final jumlah = int.tryParse(jumlahController.text) ?? 1;
+
+                await supabase.from('akuarium_ikan').insert({
+                  'akuarium_id': akuarium.id,
+                  'ikan_id': ikanId,
+                  'jumlah': jumlah,
+                });
+
+                Navigator.pop(context);
+                // Trigger refresh
+                (context as Element).markNeedsBuild();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -66,18 +142,21 @@ class DetailAkuariumScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildIkanList(), // 1. daftar ikan
+                  _buildIkanList(),
                   
                   const SizedBox(height: 20),
-                  _buildSummaryGrid(), // 2. ringkasan ekosistem di bawah ikan list
+                  _buildSummaryGrid(), 
 
                   if (!akuarium.isSetMode) ...[
                     const SizedBox(height: 20),
-                    _buildWarning(), // 3. warning mode manual
+                    _buildWarning(),
                   ],
 
                   const SizedBox(height: 20),
-                  _buildQuickTips(), // 4. tips tambahan
+                  _buildQuickTips(), 
+
+                  const SizedBox(height: 20),
+                  _buildReminderCards(),
                 ],
               ),
             ),
@@ -102,68 +181,85 @@ class DetailAkuariumScreen extends StatelessWidget {
 
         final ikanList = snapshot.data!;
 
-        if (ikanList.isEmpty) {
-          return const Text("Belum ada ikan di akuarium ini.");
-        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 140,
+              child: ikanList.isEmpty
+                  ? const Center(child: Text("Belum ada ikan di akuarium ini."))
+                  : ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: ikanList.length,
+                      itemBuilder: (context, index) {
+                        final ikan = ikanList[index]['ikan'];
 
-        return SizedBox(
-          height: 140,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            itemCount: ikanList.length,
-            itemBuilder: (context, index) {
-              final ikan = ikanList[index]['ikan'];
-
-              return Container(
-                width: 120,
-                margin: const EdgeInsets.only(right: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-                      child: Image.network(
-                        ikan['gambar_url'] ?? '',
-                        height: 80,
-                        width: 120,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 80,
+                        return Container(
                           width: 120,
-                          color: Colors.blue.shade50,
-                          child: const Icon(Icons.pets, size: 30, color: Colors.blue),
-                        ),
-                      ),
+                          margin: const EdgeInsets.only(right: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              ClipRRect(
+                                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                                child: Image.network(
+                                  ikan['gambar_url'] ?? '',
+                                  height: 80,
+                                  width: 120,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) => Container(
+                                    height: 80,
+                                    width: 120,
+                                    color: Colors.blue.shade50,
+                                    child: const Icon(Icons.pets, size: 30, color: Colors.blue),
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                                child: Text(
+                                  ikan['nama'] ?? '',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                      child: Text(
-                        ikan['nama'] ?? '',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: akuarium.isSetMode
+                  ? () => _showTambahIkanDialog(context)
+                  : null,
+              icon: const Icon(Icons.add),
+              label: const Text("Tambah Ikan"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+          ],
         );
       },
     );
   }
+
 
   Widget _buildWarning() {
     return Container(
@@ -215,7 +311,7 @@ class DetailAkuariumScreen extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Quick Tips", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            const Text("Quick Tips", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             const SizedBox(height: 12),
             _tipCard(Icons.thermostat, suhuTip),
             const SizedBox(height: 12),
@@ -262,7 +358,7 @@ class DetailAkuariumScreen extends StatelessWidget {
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [
       const Text(
-        "Ekosistem Akuarium 🧬",
+        "Ekosistem Akuarium",
         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
       ),
       
@@ -323,6 +419,98 @@ Widget _summaryItem(String emoji, String value) {
       ),
     );
   }
+
+  Widget _buildReminderCards() {
+    if (akuarium.lastFedTime == null || akuarium.lastMaintenanceTime == null) {
+      return const Text(
+        "Belum ada data jadwal pemberian makan / maintenance.",
+        style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+      );
+    }
+
+    DateTime now = DateTime.now();
+    DateTime makanNext = akuarium.lastFedTime!.add(Duration(hours: 12));
+    DateTime maintenanceNext = akuarium.lastMaintenanceTime!.add(Duration(days: 30));
+
+    Duration remainingMakan = makanNext.difference(now);
+    Duration remainingMaintenance = maintenanceNext.difference(now);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text("Reminder", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 12),
+        _reminderCard("Pemberian Makan", remainingMakan),
+        const SizedBox(height: 12),
+        _reminderCard("Maintenance Aquarium", remainingMaintenance),
+      ],
+    );
+  }
+
+  Widget _reminderCard(String title, Duration remaining) {
+    String timeText;
+
+    if (remaining.inDays > 0) {
+      timeText = "${remaining.inDays} days remaining...";
+    } else if (remaining.inHours > 0) {
+      timeText = "${remaining.inHours} hours remaining...";
+    } else if (remaining.inMinutes > 0) {
+      timeText = "${remaining.inMinutes} minutes remaining...";
+    } else {
+      timeText = "Segera dilakukan!";
+    }
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          // Title & Time
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  timeText,
+                  style: const TextStyle(
+                    color: Colors.black45,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // Bell Icon
+          const Icon(
+            Icons.notifications_active_rounded,
+            color: Color(0xFF38ABF8),
+            size: 28,
+          ),
+        ],
+      ),
+    );
+  }
+
 
   Widget _tipItem(IconData icon, String text) {
     return Row(

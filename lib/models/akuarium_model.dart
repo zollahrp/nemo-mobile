@@ -13,6 +13,8 @@ class AkuariumModel {
   final String? jadwalPakan;
   final String? jadwalMaintenance;
   final DateTime createdAt;
+  final DateTime? lastFedTime;
+  final DateTime? lastMaintenanceTime; // ✅ baru
 
   AkuariumModel({
     required this.id,
@@ -29,6 +31,8 @@ class AkuariumModel {
     this.jadwalPakan,
     this.jadwalMaintenance,
     required this.createdAt,
+    this.lastFedTime,
+    this.lastMaintenanceTime, // ✅ baru
   });
 
   factory AkuariumModel.fromMap(Map<String, dynamic> map) {
@@ -47,6 +51,12 @@ class AkuariumModel {
       jadwalPakan: map['jadwal_pakan'],
       jadwalMaintenance: map['jadwal_maintenance'],
       createdAt: DateTime.parse(map['created_at']),
+      lastFedTime: map['last_fed_time'] != null
+          ? DateTime.parse(map['last_fed_time'])
+          : null,
+      lastMaintenanceTime: map['last_maintenance_time'] != null
+          ? DateTime.parse(map['last_maintenance_time'])
+          : null,
     );
   }
 
@@ -66,6 +76,8 @@ class AkuariumModel {
       'jadwal_pakan': jadwalPakan,
       'jadwal_maintenance': jadwalMaintenance,
       'created_at': createdAt.toIso8601String(),
+      'last_fed_time': lastFedTime?.toIso8601String(),
+      'last_maintenance_time': lastMaintenanceTime?.toIso8601String(), // ✅
     };
   }
 }
