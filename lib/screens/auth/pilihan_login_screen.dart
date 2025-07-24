@@ -1,12 +1,54 @@
 import 'package:flutter/material.dart';
-import 'package:nemo_mobile/widgets/custom_button.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:nemo_mobile/main.dart';
+import 'package:nemo_mobile/screens/home/main_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
-class PilihanLoginScreen  extends StatelessWidget {
-  const PilihanLoginScreen ({super.key});
+class PilihanLoginScreen extends StatelessWidget {
+  const PilihanLoginScreen({super.key});
+
+  Future<void> _googleSignIn(BuildContext context) async {
+    try {
+      const webClientId = '875919720477-uubbvahve38uf4k81od5avf8im21d9n5.apps.googleusercontent.com';
+
+      final GoogleSignIn googleSignIn = GoogleSignIn(serverClientId: webClientId);
+      final googleUser = await googleSignIn.signIn();
+
+      if (googleUser == null) throw 'Login dibatalkan';
+
+      final googleAuth = await googleUser.authentication;
+
+      if (googleAuth.accessToken == null || googleAuth.idToken == null) {
+        throw 'Token tidak ditemukan';
+      }
+
+      await supabase.auth.signInWithIdToken(
+        provider: OAuthProvider.google,
+        idToken: googleAuth.idToken!,
+        accessToken: googleAuth.accessToken!,
+      );
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isLoggedIn', true);
+
+      if (context.mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const MainScreen()),
+        );
+      }
+    } catch (e) {
+      debugPrint('Login error: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login gagal: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -14,18 +56,13 @@ class PilihanLoginScreen  extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               const SizedBox(height: 64),
-
-              // Logo
               Center(
                 child: Image.asset(
                   'lib/assets/images/logo_bulat.png',
                   height: 160,
                 ),
               ),
-
               const SizedBox(height: 50),
-
-              // Title
               const Text.rich(
                 TextSpan(
                   text: 'Solusi Cerdas Bagi para\npecinta ',
@@ -43,57 +80,27 @@ class PilihanLoginScreen  extends StatelessWidget {
                 ),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 64),
 
-              const SizedBox(height: 58), // Tambah jarak sebelum tombol
-
-              // Sign In Button
-              CustomButton(
-                text: "Masuk",
-                onPressed: () {
-                  Navigator.pushNamed(context, '/masuk');
-                },
-              ),
-
-              const SizedBox(height: 34),
-
-              // OR line
-              Row(
-                children: const [
-                  Expanded(child: Divider(thickness: 1)),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8),
-                    child: Text("Atau Daftar"),
-                  ),
-                  Expanded(child: Divider(thickness: 1)),
-                ],
-              ),
-
-              const SizedBox(height: 34),
-
-              // Sign Up Button
+              /// Tombol Google Login langsung
               SizedBox(
                 width: double.infinity,
-                child: OutlinedButton(
-                  style: OutlinedButton.styleFrom(
+                child: ElevatedButton.icon(
+                  onPressed: () => _googleSignIn(context),
+                  icon: Image.asset('lib/assets/images/Google_G_logo.svg.png', height: 20),
+                  label: const Text('Masuk dengan Google'),
+                  style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
+                    backgroundColor: Colors.white,
+                    foregroundColor: Colors.black,
                     side: const BorderSide(color: Color(0xFF0E91E9)),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(24),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
                     textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/daftar');
-                  },
-                  child: const Text(
-                    "Daftar",
-                    style: TextStyle(color: Color(0xFF0E91E9)),
                   ),
                 ),
               ),
 
               const Spacer(),
-
               const Text(
                 "© 2025 . All rights reserved.",
                 style: TextStyle(fontSize: 12, color: Colors.grey),
@@ -103,7 +110,6 @@ class PilihanLoginScreen  extends StatelessWidget {
           ),
         ),
       ),
-      backgroundColor: Colors.white,
     );
   }
 }

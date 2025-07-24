@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
+import 'package:nemo_mobile/screens/home/main_screen.dart';
 import 'package:nemo_mobile/models/jadwal_model.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:nemo_mobile/utils/notifikasi.dart';
@@ -99,9 +100,10 @@ class _AturJadwalScreenState extends State<AturJadwalScreen> {
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(builder: (_) => const AkuariumScreen()),
+        MaterialPageRoute(builder: (_) => const MainScreen(initialIndex: 1)), // 👈 balik ke tab akuarium
         (route) => false,
       );
+
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Gagal menyimpan jadwal: $e')),

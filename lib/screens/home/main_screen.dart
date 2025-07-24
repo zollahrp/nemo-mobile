@@ -1,36 +1,39 @@
 import 'package:flutter/material.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
-import 'package:nemo_mobile/screens/akuarium/Set_Ecosystem_Screen.dart';
 import 'package:nemo_mobile/screens/home/home_screen.dart';
-import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
-import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
-import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
-import 'package:nemo_mobile/screens/settings/akun_screen.dart';
-
+import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
+import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
+import 'package:nemo_mobile/screens/fishbot/fishbot_screen.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({super.key});
+  final int initialIndex;
+
+  const MainScreen({super.key, this.initialIndex = 0});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _selectedIndex = 0;
-  DateTime? _lastPressed; // Tambahkan ini
+  late int _selectedIndex;
+  DateTime? _lastPressed;
 
   final GlobalKey<CurvedNavigationBarState> _bottomNavigationKey = GlobalKey();
 
   final List<Widget> _screens = [
     const HomeScreen(),
     const AkuariumScreen(),
-    // const SetEcosystemScreen(),
     const ScannerScreen(),
     const ListIkanScreen(),
     const FishBotScreen(),
-    // const AkunScreen(),
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.initialIndex;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +50,11 @@ class _MainScreenState extends State<MainScreen> {
           );
           return false;
         }
-        return true; // keluar aplikasi
+        return true;
       },
       child: Scaffold(
         backgroundColor: const Color(0xFFFAFAFA),
-        body: Padding(
-          padding: const EdgeInsets.only(bottom: 0),
-          child: _screens[_selectedIndex],
-        ),
+        body: _screens[_selectedIndex],
         bottomNavigationBar: PhysicalModel(
           color: Colors.transparent,
           elevation: 12,
@@ -63,34 +63,15 @@ class _MainScreenState extends State<MainScreen> {
             key: _bottomNavigationKey,
             backgroundColor: Colors.transparent,
             color: Colors.white,
-            buttonBackgroundColor: const Color.fromARGB(255, 255, 255, 255),
+            buttonBackgroundColor: Colors.white,
             height: 60,
             index: _selectedIndex,
             items: const <Widget>[
-              Padding(
-                padding: EdgeInsets.only(top: 0),
-                child: Icon(Icons.home, size: 30, color: Color(0xFF0E91E9),),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 0),
-                child: Icon(Icons.eco_rounded, size: 30, color: Color(0xFF0E91E9)),      
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 5),
-                child: Icon(Icons.qr_code_scanner, size: 30, color: Color(0xFF0E91E9),),
-              ),
-                Padding(
-                  padding: EdgeInsets.only(top: 5),
-                  child: Icon(Icons.menu_book_rounded, size: 30, color: Color(0xFF0E91E9)),
-              ),
-              Padding(
-                padding: EdgeInsets.only(top: 5),
-                child: Icon(Icons.auto_awesome, size: 30, color: Color(0xFF0E91E9),),
-              ),
-              // Padding(
-              //   padding: EdgeInsets.only(top: 5),
-              //   child: Icon(Icons.person_rounded, size: 30, color: Color(0xFF0E91E9)),
-              // ),
+              Icon(Icons.home, size: 30, color: Color(0xFF0E91E9)),
+              Icon(Icons.eco_rounded, size: 30, color: Color(0xFF0E91E9)),
+              Icon(Icons.qr_code_scanner, size: 30, color: Color(0xFF0E91E9)),
+              Icon(Icons.menu_book_rounded, size: 30, color: Color(0xFF0E91E9)),
+              Icon(Icons.auto_awesome, size: 30, color: Color(0xFF0E91E9)),
             ],
             onTap: (index) {
               setState(() {

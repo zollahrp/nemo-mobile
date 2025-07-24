@@ -40,6 +40,44 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
     }
   }
 
+  void _showEditDialog(AkuariumModel akuarium) {
+    final TextEditingController controller = TextEditingController(text: akuarium.nama);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Edit Nama Akuarium'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(hintText: 'Nama Akuarium'),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Batal'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final newName = controller.text.trim();
+                if (newName.isEmpty) return;
+
+                await Supabase.instance.client
+                    .from('akuarium')
+                    .update({'nama': newName})
+                    .eq('id', akuarium.id);
+
+                Navigator.pop(context);
+                await fetchAkuarium(); // refresh list
+              },
+              child: const Text('Simpan'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   
   List<AkuariumModel> akuariumList = [];
   bool isLoading = true;
@@ -120,29 +158,29 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
                   style: const TextStyle(fontSize: 14, color: Colors.black54),
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  height: 44,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.4),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: TabBar(
-                    controller: _tabController,
-                    indicator: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.white,
-                    ),
-                    labelColor: Colors.black,
-                    unselectedLabelColor: Colors.black54,
-                    dividerColor: Colors.transparent,
-                    indicatorPadding: const EdgeInsets.all(2),
-                    labelPadding: const EdgeInsets.symmetric(horizontal: 16), // 🔥 Tambah ini!
-                    tabs: const [
-                      Tab(child: Text("Semua Akuarium")),
-                      Tab(child: Text("Pengingat")),
-                    ],
-                  ),
-                ),
+                // Container(
+                //   height: 44,
+                //   decoration: BoxDecoration(
+                //     color: Colors.white.withOpacity(0.4),
+                //     borderRadius: BorderRadius.circular(12),
+                //   ),
+                //   child: TabBar(
+                //     controller: _tabController,
+                //     indicator: BoxDecoration(
+                //       borderRadius: BorderRadius.circular(12),
+                //       color: Colors.white,
+                //     ),
+                //     labelColor: Colors.black,
+                //     unselectedLabelColor: Colors.black54,
+                //     dividerColor: Colors.transparent,
+                //     indicatorPadding: const EdgeInsets.all(2),
+                //     labelPadding: const EdgeInsets.symmetric(horizontal: 16), // 🔥 Tambah ini!
+                //     tabs: const [
+                //       Tab(child: Text("Semua Akuarium")),
+                //       Tab(child: Text("Pengingat")),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -235,7 +273,19 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
                         ],
                       ),
                     ),
-                    const Icon(Icons.more_vert, size: 20),
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          _showEditDialog(akuarium); // fungsi edit
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem<String>(
+                          value: 'edit',
+                          child: Text('Edit Nama'),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/list_ikan_screen.dart';
 import 'package:nemo_mobile/screens/home/artikel_screen.dart';
 import 'package:nemo_mobile/data/dummy_artikel.dart';
+import 'package:nemo_mobile/screens/home/main_screen.dart';
+import 'package:nemo_mobile/screens/scanner/scanner_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nemo_mobile/screens/ensiklopedia/detail_ikan_screen.dart';
 import 'package:nemo_mobile/models/IkanModel.dart';
 import 'package:nemo_mobile/screens/home/full_search_ikan_screen.dart';
 import 'dart:ui'; 
+import 'package:nemo_mobile/screens/home/notifikasi_screen.dart';
 
 final user = Supabase.instance.client.auth.currentUser;
 final fullName = user?.userMetadata?['full_name'] ?? 'Pengguna';
@@ -18,6 +22,7 @@ class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
+
 
 class _HomeScreenState extends State<HomeScreen> {
   String _getFirstName(String fullName) {
@@ -37,6 +42,90 @@ class _HomeScreenState extends State<HomeScreen> {
       return 'Selamat Malam! ';
     }
   }
+
+  int jumlahNotif = 0;
+
+  Future<void> getJumlahNotif() async {
+    final response = await Supabase.instance.client
+        .from('notifikasi')
+        .select('id')
+        .eq('is_read', false);
+
+    setState(() {
+      jumlahNotif = response.length;
+    });
+  }
+
+  Future<void> getJumlahJadwalAkanDatang() async {
+  final now = DateTime.now();
+
+  final response = await Supabase.instance.client
+      .from('jadwal')
+      .select()
+      .gte('tanggal', now.toIso8601String().split('T')[0]); // filter tanggal hari ini ke depan
+
+  final List jadwalList = response;
+
+    final filtered = jadwalList.where((jadwal) {
+      final DateTime tanggal = DateTime.parse(jadwal['tanggal']);
+      final jamSplit = (jadwal['jam'] ?? '00:00').split(':');
+      final fullDateTime = DateTime(
+        tanggal.year,
+        tanggal.month,
+        tanggal.day,
+        int.parse(jamSplit[0]),
+        int.parse(jamSplit[1]),
+      );
+
+      return fullDateTime.isAfter(now);
+    }).toList();
+
+    setState(() {
+      jumlahNotif = filtered.length;
+    });
+  }
+
+  Future<void> updateJumlahNotifGabungan() async {
+  final now = DateTime.now();
+
+  final notifikasiRes = await Supabase.instance.client
+      .from('notifikasi')
+      .select('id')
+      .eq('is_read', false);
+
+  final jadwalRes = await Supabase.instance.client
+      .from('jadwal')
+      .select()
+      .gte('tanggal', now.toIso8601String().split('T')[0]);
+
+  final filteredJadwal = jadwalRes.where((jadwal) {
+    final DateTime tanggal = DateTime.parse(jadwal['tanggal']);
+    final jamSplit = (jadwal['jam'] ?? '00:00').split(':');
+    final fullDateTime = DateTime(
+      tanggal.year,
+      tanggal.month,
+      tanggal.day,
+      int.parse(jamSplit[0]),
+      int.parse(jamSplit[1]),
+    );
+    return fullDateTime.isAfter(now);
+  }).toList();
+
+  setState(() {
+    jumlahNotif = notifikasiRes.length + filteredJadwal.length;
+  });
+}
+
+  
+  @override
+  void initState() {
+    super.initState();
+    getJumlahJadwalAkanDatang();
+    getJumlahNotif();
+  }
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -246,27 +335,35 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildHorizontalBanner() {
     final List<Map<String, dynamic>> bannerData = [
-      {
-        'title': 'Cek dulu yuk, ikan kamu lagi baik-baik aja gak ya?',
-        'buttonText': 'Mulai Diagnosa',
-        'bgColor': const Color(0xFFD4EDFF),
-        'image': 'lib/assets/images/banner1.png',      },
-      {
-        'title': 'Yuk, rawat ikan kesayangan kamu bersama Nemo!',
-        'buttonText': 'Lihat Checklist Harian',
-        'bgColor': const Color(0xFFE0F7E9),
-        'image': 'lib/assets/images/banner2.png',      },
-      {
-        'title': 'Biar makin jago, yuk belajar soal ikan hias!',
-        'buttonText': 'Lihat Sekarang',
-        'bgColor': const Color(0xFFF5E9FF),
-        'image': 'lib/assets/images/banner3.png',      },
-      {
-        'title': 'Kalau kamu jadi ikan, kamu jadi yang mana ya?',
-        'buttonText': 'Mau tau',
-        'bgColor': const Color(0xFFFFF5E0),
-        'image': 'lib/assets/images/banner4.png',      },
-    ];
+  {
+    'title': 'Biar makin jago, yuk belajar soal ikan hias!',
+    'buttonText': 'Lihat Sekarang',
+    'bgColor': const Color(0xFFF5E9FF),
+    'image': 'lib/assets/images/banner3.png',
+    'onTap': (BuildContext context) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(initialIndex: 3), // Ensiklopedia
+        ),
+      );
+    },
+  },
+  {
+    'title': 'Cek kesehatan akuariummu sekarang!',
+    'buttonText': 'Mulai Scan',
+    'bgColor': const Color(0xFFE5F7FF),
+    'image': 'lib/assets/images/banner2.png',
+    'onTap': (BuildContext context) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MainScreen(initialIndex: 2), // Scanner
+        ),
+      );
+    },
+  },
+];
 
     return SizedBox(
       height: 130, // tinggi banner
@@ -308,7 +405,11 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                               const SizedBox(height: 12),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  if (data['onTap'] != null) {
+                                    data['onTap'](context);
+                                  }
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: Colors.white,
                                   foregroundColor: Colors.black,
@@ -467,13 +568,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
             // Notifikasi
             Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.notifications_none_rounded, color: Colors.black87),
-                  onPressed: () {
-                    // aksi ketika ditekan
-                  },
-                ),
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications_none_rounded, color: Colors.black87),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const NotifikasiScreen()),
+                  );
+                  getJumlahNotif(); // kamu bisa ubah ini ke updateJumlahNotifGabungan() kalau digabung
+                },
+              ),
+              if (jumlahNotif > 0)
                 Positioned(
                   top: 6,
                   right: 6,
@@ -483,9 +589,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       shape: BoxShape.circle,
                       color: Colors.red,
                     ),
-                    child: const Text(
-                      '116',
-                      style: TextStyle(
+                    child: Text(
+                      '$jumlahNotif',
+                      style: const TextStyle(
                         color: Colors.white,
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -493,8 +599,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-              ],
-            ),
+            ],
+          )
           ],
         ),
       ),

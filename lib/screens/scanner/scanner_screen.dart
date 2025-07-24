@@ -163,7 +163,7 @@ Future<Map<String, String>> _runModel(File file) async {
   final topIndex = scores.indexOf(maxScore);
 
   // Tambahin threshold (misal: 0.7 = 70%)
-  if (maxScore < 0.7) {
+  if (maxScore < 0.5) {
     return {
       "jenis": "Tidak dikenali",
       "status": "-",

@@ -816,12 +816,6 @@ Widget _summaryItem(String emoji, String value) {
                     onPressed: () => Navigator.pop(context),
                   ),
                   const Spacer(),
-                  IconButton(
-                    icon: const Icon(Icons.more_vert, color: Colors.black),
-                    onPressed: () {
-                      // TODO: Add menu action
-                    },
-                  ),
                 ],
               ),
               const SizedBox(height: 8),

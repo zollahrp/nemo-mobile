@@ -275,27 +275,27 @@ class _ListIkanScreenState extends State<ListIkanScreen> {
                                             width: double.infinity,
                                             fit: BoxFit.cover,
                                           ),
-                                          Positioned(
-                                            top: 8,
-                                            right: 8,
-                                            child: Container(
-                                              decoration: BoxDecoration(
-                                                color: Colors.white,
-                                                shape: BoxShape.circle,
-                                                boxShadow: [
-                                                  BoxShadow(
-                                                    color: Colors.black26,
-                                                    blurRadius: 4,
-                                                  ),
-                                                ],
-                                              ),
-                                              child: const Icon(
-                                                Icons.star_border,
-                                                size: 20,
-                                                color: Colors.grey,
-                                              ),
-                                            ),
-                                          ),
+                                          // Positioned(
+                                          //   top: 8,
+                                          //   right: 8,
+                                          //   child: Container(
+                                          //     decoration: BoxDecoration(
+                                          //       color: Colors.white,
+                                          //       shape: BoxShape.circle,
+                                          //       boxShadow: [
+                                          //         BoxShadow(
+                                          //           color: Colors.black26,
+                                          //           blurRadius: 4,
+                                          //         ),
+                                          //       ],
+                                          //     ),
+                                          //     child: const Icon(
+                                          //       Icons.star_border,
+                                          //       size: 20,
+                                          //       color: Colors.grey,
+                                          //     ),
+                                          //   ),
+                                          // ),
                                         ],
                                       ),
                                       Padding(

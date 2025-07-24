@@ -57,12 +57,12 @@ class AkunScreen extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               children: [
-                menuTile(Icons.person, 'Informasi Personal', () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const InformasiPersonalScreen()),
-                  );
-                }),
+                // menuTile(Icons.person, 'Informasi Personal', () {
+                //   Navigator.push(
+                //     context,
+                //     MaterialPageRoute(builder: (context) => const InformasiPersonalScreen()),
+                //   );
+                // }),
                 menuTile(Icons.help_outline, 'FAQ', () {
                   Navigator.push(
                     context,
@@ -103,9 +103,50 @@ class AkunScreen extends StatelessWidget {
                 }, textColor: Colors.red),
 
                 // Hapus akun (masih kosong logicnya)
-                menuTile(Icons.delete, 'Hapus Akun', () {
-                  // TODO: Tambahkan konfirmasi dan logic penghapusan akun
-                }, textColor: Colors.red),
+                menuTile(Icons.delete, 'Hapus Akun', () async {
+  final confirm = await showDialog<bool>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('Hapus Akun'),
+      content: const Text('Apakah kamu yakin ingin menghapus akun ini? Tindakan ini tidak bisa dibatalkan.'),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(false),
+          child: const Text('Batal'),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(ctx).pop(true),
+          child: const Text('Hapus', style: TextStyle(color: Colors.red)),
+        ),
+      ],
+    ),
+  );
+
+  if (confirm != true) return;
+
+  final user = supabase.auth.currentUser;
+  if (user == null) return;
+
+  // 1. Hapus dari tabel `profiles`
+  await supabase.from('profiles').delete().eq('id', user.id);
+
+  // 2. Logout (optional: Google sign out)
+  final GoogleSignIn googleSignIn = GoogleSignIn();
+  await googleSignIn.signOut();
+  await supabase.auth.signOut();
+
+  // 3. Clear shared preferences
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('isLoggedIn');
+
+  // 4. Arahkan ke login screen
+  if (context.mounted) {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (route) => false,
+    );
+  }
+}, textColor: Colors.red),
               ],
             ),
           ),
