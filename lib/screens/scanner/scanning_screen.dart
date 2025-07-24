@@ -65,8 +65,8 @@ class _ScanningScreenState extends State<ScanningScreen>
             children: [
               // Gambar di atas
               Image.asset(
-                'lib/assets/images/fitur1.png',
-                height: 160, // diperbesar dari 120 ke 160
+                'lib/assets/images/scan.png',
+                height: 300, // diperbesar dari 120 ke 160
               ),
               const SizedBox(height: 32),
 

@@ -71,7 +71,7 @@ class _ScannerDetailScreenState extends State<ScannerDetailScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      'assets/images/fitur1.png', // kamu bisa ganti sesuai asset yg kamu punya
+                      'lib/assets/images/not_found.png', // kamu bisa ganti sesuai asset yg kamu punya
                       width: 160,
                     ),
                     const SizedBox(height: 24),

@@ -63,7 +63,8 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
-
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.6
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -112,3 +113,16 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "lib/assets/images/logo.png"
+
+flutter_native_splash:
+  color: "#ffffff" 
+  image: "lib/assets/images/logo_bulat.png" 
+  android: true
+  ios: true
+  android_gravity: center
+  ios_content_mode: center
