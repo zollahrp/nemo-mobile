@@ -19,71 +19,100 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
-  final supabase = Supabase.instance.client;
+// ✅ Import notifikasi & permission
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:permission_handler/permission_handler.dart';
 
-    Future<void> main() async {
-    WidgetsFlutterBinding.ensureInitialized();
+// ✅ Inisialisasi Supabase
+final supabase = Supabase.instance.client;
 
-    // Load .env
-    await dotenv.load(fileName: ".env");
+// ✅ Plugin notifikasi global
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
 
-    // Init Supabase
-    await Supabase.initialize(
-      url: dotenv.env['SUPABASE_URL']!,
-      anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
-    );
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-    // Inisialisasi locale Indonesia
-    await initializeDateFormatting('id_ID', null);
+  // Load .env
+  await dotenv.load(fileName: ".env");
 
-    // ✅ Tes print format tanggal
-    final tanggalFormatted = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
-    print('Tanggal lokal: $tanggalFormatted');
+  // Init Supabase
+  await Supabase.initialize(
+    url: dotenv.env['SUPABASE_URL']!,
+    anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
+  );
 
-    // Cek onboarding
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+  // Inisialisasi locale Indonesia
+  await initializeDateFormatting('id_ID', null);
 
-    runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding));
+  // ✅ Tes print format tanggal
+  final tanggalFormatted = DateFormat('EEEE, d MMMM yyyy', 'id_ID').format(DateTime.now());
+  print('Tanggal lokal: $tanggalFormatted');
+
+  // ✅ Inisialisasi timezone untuk notifikasi terjadwal
+  tz.initializeTimeZones();
+
+  // ✅ Inisialisasi notifikasi lokal
+  const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+  const initSettings = InitializationSettings(android: androidSettings);
+  await flutterLocalNotificationsPlugin.initialize(initSettings);
+
+  // ✅ Minta izin notifikasi
+  await requestNotificationPermission();
+
+  // Cek onboarding
+  final prefs = await SharedPreferences.getInstance();
+  final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+  runApp(MyApp(hasSeenOnboarding: hasSeenOnboarding));
+}
+
+// ✅ Fungsi minta izin notifikasi
+Future<void> requestNotificationPermission() async {
+  final status = await Permission.notification.status;
+  if (!status.isGranted) {
+    await Permission.notification.request();
   }
-
+}
 class MyApp extends StatelessWidget {
   final bool hasSeenOnboarding;
 
   const MyApp({super.key, required this.hasSeenOnboarding});
 
   @override
-    Widget build(BuildContext context) {
-      return MaterialApp(
-    debugShowCheckedModeBanner: false,
-    title: 'Nemo.Ai',
-    theme: ThemeData(
-      colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      scaffoldBackgroundColor: Colors.white,
-      useMaterial3: true,
-    ),
-    localizationsDelegates: const [
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: const [
-      Locale('id', 'ID'),
-    ],
-    home: SplashScreen(hasSeenOnboarding: hasSeenOnboarding),
-    routes: {
-      '/login': (context) => const PilihanLoginScreen(),
-      '/masuk': (context) => const LoginScreen(),
-      '/daftar': (context) => const DaftarScreen(),
-      '/fishbot': (context) => const FishBotScreen(),
-      '/akun': (context) => const AkunScreen(),
-      '/main': (context) => const MainScreen(),
-      '/detail_ikan': (context) {
-        final data = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
-        final ikanModel = IkanModel.fromMap(data);
-        return DetailIkanScreen(ikan: ikanModel);
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      title: 'Nemo.Ai',
+      theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        scaffoldBackgroundColor: Colors.white,
+        useMaterial3: true,
+      ),
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('id', 'ID'),
+      ],
+      home: SplashScreen(hasSeenOnboarding: hasSeenOnboarding),
+      routes: {
+        '/login': (context) => const PilihanLoginScreen(),
+        '/masuk': (context) => const LoginScreen(),
+        '/daftar': (context) => const DaftarScreen(),
+        '/fishbot': (context) => const FishBotScreen(),
+        '/akun': (context) => const AkunScreen(),
+        '/main': (context) => const MainScreen(),
+        '/detail_ikan': (context) {
+          final data = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+          final ikanModel = IkanModel.fromMap(data);
+          return DetailIkanScreen(ikan: ikanModel);
+        },
       },
-    },
-  );
+    );
   }
 }

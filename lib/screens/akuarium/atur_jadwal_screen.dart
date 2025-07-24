@@ -3,6 +3,8 @@ import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:nemo_mobile/screens/akuarium/akuarium_screen.dart';
 import 'package:nemo_mobile/models/jadwal_model.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:nemo_mobile/utils/notifikasi.dart';
 
 
 class AturJadwalScreen extends StatefulWidget {
@@ -49,31 +51,62 @@ class _AturJadwalScreenState extends State<AturJadwalScreen> {
   void _submitForm() async {
     if (_formKey.currentState!.validate() && _selectedTime != null && _selectedDate != null) {
       final formattedDate = DateFormat('yyyy-MM-dd').format(_selectedDate!);
-      final formattedTime = _selectedTime!.format(context);
 
       try {
-        await Supabase.instance.client.from('jadwal').insert({
-          'akuarium_id': widget.akuariumId,
-          'type': widget.type,
-          'tanggal': formattedDate,
-          'jam': _selectedTime!.hour.toString().padLeft(2, '0') +
-                ':' +
-                _selectedTime!.minute.toString().padLeft(2, '0'),
-          'created_at': DateTime.now().toIso8601String(),
-        });
+      // Simpan ke Supabase
+      await Supabase.instance.client.from('jadwal').insert({
+        'akuarium_id': widget.akuariumId,
+        'type': widget.type,
+        'tanggal': formattedDate,
+        'jam': _selectedTime!.hour.toString().padLeft(2, '0') +
+            ':' +
+            _selectedTime!.minute.toString().padLeft(2, '0'),
+        'created_at': DateTime.now().toIso8601String(),
+      });
 
-        // Navigasi ke AkuariumScreen setelah sukses
-        if (!mounted) return;
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => const AkuariumScreen()),
-          (route) => false, // hapus semua route sebelumnya
-        );
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Gagal menyimpan jadwal: $e')),
-        );
-      }
+      // ✅ Tampilkan notifikasi langsung
+      await showNowNotification(
+        'Jadwal Ditambahkan',
+        'Kamu baru saja menambahkan jadwal ${widget.type} untuk akuarium!',
+      );
+
+      final jadwalTz = tz.TZDateTime(
+        tz.local,
+        _selectedDate!.year,
+        _selectedDate!.month,
+        _selectedDate!.day,
+        _selectedTime!.hour,
+        _selectedTime!.minute,
+      );
+
+      // ✅ Hitung waktu 5 menit sebelumnya
+      final scheduledNotifTz = jadwalTz.subtract(const Duration(minutes: 5));
+
+      // ✅ Ambil waktu sekarang untuk validasi
+      final nowTz = tz.TZDateTime.now(tz.local);
+
+      // ✅ Gunakan waktu notifikasi yang valid
+      final validNotifTime = scheduledNotifTz.isBefore(nowTz) ? jadwalTz : scheduledNotifTz;
+      // ✅ Jadwalkan notifikasi
+      await scheduleNotification(
+        title: 'Pengingat Jadwal ${widget.type}',
+        body: 'Waktunya melakukan ${widget.type} untuk akuarium kamu!',
+        scheduledTime: validNotifTime,
+        id: jadwalTz.millisecondsSinceEpoch.remainder(100000),
+      );
+
+      // ✅ Kembali ke halaman akuarium
+      if (!mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (_) => const AkuariumScreen()),
+        (route) => false,
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Gagal menyimpan jadwal: $e')),
+      );
+    }
     }
   }
 
