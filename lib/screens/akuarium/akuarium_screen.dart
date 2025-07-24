@@ -201,7 +201,7 @@ class _AkuariumScreenState extends State<AkuariumScreen> with SingleTickerProvid
                       radius: 25,
                       backgroundImage: akuarium.fotoUrl != null
                           ? NetworkImage(akuarium.fotoUrl!)
-                          : const AssetImage('lib/assets/images/fitur1.png') as ImageProvider,
+                          : const AssetImage('lib/assets/images/avatar_akuarium.jpg') as ImageProvider,
                     ),
                     const SizedBox(width: 12),
                     Expanded(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nemo_mobile/models/akuarium_model.dart';
+import 'package:nemo_mobile/screens/akuarium/atur_jadwal_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class DetailAkuariumScreen extends StatelessWidget {
@@ -16,6 +17,87 @@ class DetailAkuariumScreen extends StatelessWidget {
 
     return response;
   }
+
+ Future<List<Map<String, dynamic>>> fetchJadwalAkuarium() async {
+  final supabase = Supabase.instance.client;
+  final now = DateTime.now();
+
+  final response = await supabase
+      .from('jadwal')
+      .select()
+      .eq('akuarium_id', akuarium.id)
+      .order('tanggal', ascending: true);
+
+  final List<Map<String, dynamic>> jadwalList = List<Map<String, dynamic>>.from(response);
+
+  final filtered = jadwalList.where((jadwal) {
+    final tanggalStr = jadwal['tanggal'];
+    final jamStr = jadwal['jam'];
+
+    if (tanggalStr == null || jamStr == null) return false;
+
+    try {
+      final jamParts = jamStr.split(':');
+      final jam = jamParts[0].padLeft(2, '0');
+      final menit = jamParts[1].padLeft(2, '0');
+      final fullDateTime = DateTime.parse('$tanggalStr $jam:$menit:00');
+
+      print('fullDateTime: $fullDateTime');
+      print('now: $now');
+
+      return fullDateTime.isAfter(now.subtract(const Duration(minutes: 1)));
+    } catch (e) {
+      print('Error parsing tanggal/jam: $e');
+      return false;
+    }
+  }).toList();
+
+  return filtered;
+}
+
+  Future<void> updateJadwalPakan({
+    required String akuariumId,
+    required String jadwal,
+  }) async {
+    final now = DateTime.now().toIso8601String();
+
+    try {
+      final response = await Supabase.instance.client
+          .from('akuarium')
+          .update({
+            'jadwal_pakan': jadwal,
+            'last_fed_time': now,
+          })
+          .eq('id', akuariumId);
+
+      debugPrint('✅ Jadwal pakan berhasil diupdate');
+    } catch (e) {
+      debugPrint('❌ Gagal update jadwal pakan: $e');
+    }
+  }
+
+  Future<void> updateJadwalMaintenance({
+    required String akuariumId,
+    required String jadwal,
+  }) async {
+    final now = DateTime.now().toIso8601String();
+
+    try {
+      final response = await Supabase.instance.client
+          .from('akuarium')
+          .update({
+            'jadwal_maintenance': jadwal,
+            'last_maintenance_time': now,
+          })
+          .eq('id', akuariumId);
+
+      debugPrint('✅ Jadwal maintenance berhasil diupdate');
+    } catch (e) {
+      debugPrint('❌ Gagal update jadwal maintenance: $e');
+    }
+  }
+
+
   
 
   Future<String?> getSuhuRange() async {
@@ -102,9 +184,33 @@ class DetailAkuariumScreen extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              child: const Text("Batal"),
-              onPressed: () => Navigator.pop(context),
-            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AturJadwalScreen(
+                    type: 'makan',
+                    akuariumId: akuarium.id,
+                  ),
+                ),
+              );
+            },
+            child: const Text('Atur Jadwal Makan'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AturJadwalScreen(
+                    type: 'maintenance',
+                    akuariumId: akuarium.id,
+                  ),
+                ),
+              );
+            },
+            child: const Text('Atur Jadwal Maintenance'),
+          ),
             ElevatedButton(
               child: const Text("Simpan"),
               onPressed: () async {
@@ -117,7 +223,7 @@ class DetailAkuariumScreen extends StatelessWidget {
                   'jumlah': jumlah,
                 });
 
-                Navigator.pop(context);
+                Navigator.pop(context, true);
                 // Trigger refresh
                 (context as Element).markNeedsBuild();
               },
@@ -139,27 +245,36 @@ class DetailAkuariumScreen extends StatelessWidget {
           Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildIkanList(),
-                  
-                  const SizedBox(height: 20),
-                  _buildSummaryGrid(), 
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildIkanList(),
 
-                  if (!akuarium.isSetMode) ...[
-                    const SizedBox(height: 20),
-                    _buildWarning(),
-                  ],
+                const SizedBox(height: 20),
+                _buildSummaryGrid(),
 
+                if (!akuarium.isSetMode) ...[
                   const SizedBox(height: 20),
-                  _buildQuickTips(), 
-
-                  const SizedBox(height: 20),
-                  _buildReminderCards(),
+                  _buildWarning(),
                 ],
-              ),
+
+                const SizedBox(height: 20),
+                _buildQuickTips(),
+
+                const SizedBox(height: 20),
+                _buildReminderCards(context),
+
+                // ⬇️ Tambahkan bagian Jadwal di sini
+                const SizedBox(height: 20),
+                const Text(
+                  "Jadwal Pemeliharaan",
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                _buildJadwalList(),
+              ],
             ),
+          ),
           ),
         ],
       ),
@@ -255,6 +370,51 @@ class DetailAkuariumScreen extends StatelessWidget {
               ),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Widget _buildJadwalList() {
+    return FutureBuilder<List<Map<String, dynamic>>>(
+      future: fetchJadwalAkuarium(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const CircularProgressIndicator();
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Text("Belum ada jadwal.");
+        }
+
+        final jadwalList = snapshot.data!;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: jadwalList.map((jadwal) {
+            return Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("${jadwal['type']} - ${jadwal['tanggal']} ${jadwal['jam']}"),
+                  const Icon(Icons.schedule, color: Colors.blue),
+                ],
+              ),
+            );
+          }).toList(),
         );
       },
     );
@@ -420,14 +580,109 @@ Widget _summaryItem(String emoji, String value) {
     );
   }
 
-  Widget _buildReminderCards() {
+  Widget _emptyReminderCard({
+    required String title,
+    required String buttonLabel,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.blue.shade100,
+            child: Icon(icon, color: Colors.blue.shade700),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 6),
+              ],
+            ),
+          ),
+          ElevatedButton(
+            onPressed: onPressed,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF38ABF8),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: Text(buttonLabel),
+          ),
+        ],
+      ),
+    );
+  }
+
+    Widget _buildReminderCards(BuildContext context) {
     if (akuarium.lastFedTime == null || akuarium.lastMaintenanceTime == null) {
-      return const Text(
-        "Belum ada data jadwal pemberian makan / maintenance.",
-        style: TextStyle(fontSize: 14, fontStyle: FontStyle.italic),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Reminder", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 12),
+
+          _emptyReminderCard(
+            title: "Pemberian Makan",
+            buttonLabel: "Atur Jadwal",
+            icon: Icons.restaurant_menu,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AturJadwalScreen(
+                    type: 'makan',
+                    akuariumId: akuarium.id,
+                  ),
+                ),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+
+          _emptyReminderCard(
+            title: "Maintenance Aquarium",
+            buttonLabel: "Atur Jadwal",
+            icon: Icons.build_circle,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AturJadwalScreen(
+                    type: 'maintenance',
+                    akuariumId: akuarium.id,
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
       );
     }
 
+    // Kalau udah ada datanya (seperti sebelumnya)
     DateTime now = DateTime.now();
     DateTime makanNext = akuarium.lastFedTime!.add(Duration(hours: 12));
     DateTime maintenanceNext = akuarium.lastMaintenanceTime!.add(Duration(days: 30));
